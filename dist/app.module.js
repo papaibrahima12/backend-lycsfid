@@ -27,10 +27,10 @@ exports.AppModule = AppModule = __decorate([
             }),
             typeorm_1.TypeOrmModule.forRoot({
                 type: 'postgres',
-                host: 'localhost',
+                host: 'pgadmin.cxlgttvw2fl6.us-east-1.rds.amazonaws.com',
                 port: 5432,
-                password: 'passer',
-                username: 'postgres',
+                password: 'jKjquQwYPZtcfJDAA6Rg',
+                username: 'ibrahima',
                 entities: [],
                 autoLoadEntities: true,
                 database: 'lycsallio',
