@@ -1,10 +1,9 @@
-import { HttpException, HttpStatus, Injectable, Logger, Req } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Campagne } from 'src/entities/Campagne.entity';
-import { request } from 'express';
-import { Entreprise } from 'src/entities/entreprise.entity';
+import { Entreprise } from 'src/entities/Entreprise.entity';
 
 
 @Injectable()

@@ -4,7 +4,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { secretKey } from 'src/guards/auth/config';
 import { SendEmailService } from 'src/services/send-email.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Entreprise } from 'src/entities/entreprise.entity';
+import { Entreprise } from 'src/entities/Entreprise.entity';
 
 @Module({
   imports: [

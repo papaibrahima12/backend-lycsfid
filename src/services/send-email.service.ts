@@ -3,7 +3,7 @@ import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import * as crypto from 'crypto';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Entreprise } from 'src/entities/entreprise.entity';
+import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()

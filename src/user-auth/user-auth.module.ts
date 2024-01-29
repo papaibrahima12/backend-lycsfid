@@ -8,7 +8,7 @@ import { SendEmailService } from 'src/services/send-email.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Verification } from 'src/entities/Verification.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
-import { Entreprise } from 'src/entities/entreprise.entity';
+import { Entreprise } from 'src/entities/Entreprise.entity';
 import { User } from 'src/entities/User.entity';
 
 @Module({

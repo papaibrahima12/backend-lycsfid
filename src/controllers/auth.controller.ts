@@ -2,7 +2,7 @@ import { Body, Controller, Post, Get, UseGuards, Param } from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
 import { Verification } from 'src/entities/Verification.entity';
-import { Entreprise } from 'src/entities/entreprise.entity';
+import { Entreprise } from 'src/entities/Entreprise.entity';
 import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { AuthService } from 'src/services/auth.service';
 import { SendEmailService } from 'src/services/send-email.service';
