@@ -1,5 +1,5 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Entreprise } from "./entreprise.entity";
+import { Entreprise } from "./Entreprise.entity";
 
 @Entity()
 export class Bon {

@@ -1,5 +1,5 @@
 import { Column, Entity, ManyToOne, JoinColumn, PrimaryGeneratedColumn } from "typeorm";
-import { Entreprise } from "./entreprise.entity"; // Assurez-vous d'ajuster le chemin d'importation en fonction de votre structure de fichiers
+import { Entreprise } from "./Entreprise.entity";
 
 @Entity()
 export class Verification {
