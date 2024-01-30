@@ -14,7 +14,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       envFilePath: '.env',
       isGlobal: true,
     }),
-    // MongooseModule.forRoot(process.env.MONGO_URI),
     TypeOrmModule.forRoot({
       type: 'postgres',
       host: 'pgadmin.cxlgttvw2fl6.us-east-1.rds.amazonaws.com',

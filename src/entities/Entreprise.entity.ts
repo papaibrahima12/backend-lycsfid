@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsEmpty } from "class-validator";
 import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
@@ -11,15 +12,19 @@ export class Entreprise {
   nom: string;
   @IsEmail()
   @Column({type:'varchar', length:40, nullable:false, unique:true})
+  @ApiProperty({required:true})
   email: string;
   @IsEmpty()
   @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
+  @ApiProperty({required:true})
   adresse: string;
   @Column({type:'varchar', length:255, nullable:false})
+  @ApiProperty({required:true})
   telephone: string;
   @Column({type:'varchar',default:'entreprise'})
   role: string;
   @Column({type:'varchar', length:255, nullable:false})
+  @ApiProperty({required:true})
   ninea:string;
   @Column({type:'varchar', length:255, nullable:true})
   groupe:string;
@@ -28,8 +33,10 @@ export class Entreprise {
   @Column({type:'varchar', length:255, nullable:true})
   contactRef:string;
   @Column({type:'varchar', length:255, nullable:false})
+  @ApiProperty({required:true})
   password: string;
   @Column({type:'varchar', length:255, nullable:false})
+  @ApiProperty({required:true})
   new_password: string;
   @Column({ default: false })
   verified: boolean;
