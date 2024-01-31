@@ -1,5 +1,4 @@
-import { IsNotEmpty } from 'class-validator';
-import { Body, Controller, Post, Get, UseGuards, Param } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards, Param, Req, HttpStatus, Session } from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
 import { Verification } from 'src/entities/Verification.entity';
@@ -9,6 +8,7 @@ import { AuthService } from 'src/services/auth.service';
 import { SendEmailService } from 'src/services/send-email.service';
 import { VerificationService } from 'src/services/verification.service';
 import { ApiTags, ApiOperation,ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @ApiTags('Authentification for all users')
 @Controller('api/auth')
@@ -207,6 +207,19 @@ export class AuthController {
     return this.userAuthService.getUsers();
   }
 
+  @Get('particuliers')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  async getParticuliers(): Promise<Particulier[]> {
+    return this.userAuthService.getClients();
+  }
+
+  @Get('companies')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  async getEntreprises(): Promise<Entreprise[]> {
+    return this.userAuthService.getEntreprises();
+  }
 
 
   @Get('admin/verifications')
@@ -214,5 +227,17 @@ export class AuthController {
   @ApiBearerAuth() 
   async getVerifications(): Promise<Verification[]> {
     return this.userAuthService.getVerifications();
+  }
+
+  @Get('logout')
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth() 
+  async logout(@Req() req : Request): Promise<any> {
+    req.session.destroy(() => {
+      return {
+        message: 'Logout successful',
+        statusCode: HttpStatus.OK,
+      };
+    });
   }
 }

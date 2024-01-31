@@ -10,6 +10,7 @@ import { Verification } from 'src/entities/Verification.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { User } from 'src/entities/User.entity';
+import { Session } from 'src/guards/auth/session';
 
 @Module({
     imports: [
@@ -20,6 +21,6 @@ import { User } from 'src/entities/User.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, VerificationService, SendEmailService],
+  providers: [AuthService, VerificationService,Session, SendEmailService],
 })
 export class UserAuthModule {}

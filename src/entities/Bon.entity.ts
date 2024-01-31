@@ -47,9 +47,9 @@ export class Bon {
   @ApiProperty({required:true})
   localisation: string;
 
-  @Column({})
-  @ApiProperty()
-  image: string;
+  // @Column({})
+  // @ApiProperty()
+  // image: string;
 
   @Column({default:false})
   isActive: boolean;

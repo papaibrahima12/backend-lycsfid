@@ -1,10 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
+import * as session from 'express-session';
+import * as passport from 'passport';
+import * as process from 'process';
+import { ValidationPipe } from '@nestjs/common';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+
   const options = new DocumentBuilder()
     .setTitle('Api Production LYCS FID')
     .setDescription('')

@@ -39,4 +39,15 @@ export class SendEmailService {
       `
     });
   } 
+  async sendWelcomeEmail(email: string): Promise<void> {
+    await this.mailerService.sendMail({
+      to: email,
+      from: '"Lycs Allio" <ibousow311@gmail.com>',
+      subject: 'Nouveau Compte',
+      html: `
+      <p>Bonjour cher partenaire,</p>
+        <p>Votre inscription a été prise en compte, et votre compte est en cours d'activation. </p>
+      `
+    });
+  } 
 }

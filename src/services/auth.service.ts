@@ -7,6 +7,7 @@ import { User } from 'src/entities/User.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Verification } from 'src/entities/Verification.entity';
+import { SendEmailService } from './send-email.service';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
                @InjectRepository(Entreprise) private entrepriseRepository: Repository<Entreprise>,
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
                @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
-              private jwtService: JwtService) {}
+              private jwtService: JwtService, private sendEmailService:SendEmailService) {}
  
   async registerAdmin(email: string, adresse:string, password: string, new_password:string): Promise<{ message: string }> {
      const user = await this.userRepository.findOne({ where:{ email: email }});
@@ -27,6 +28,7 @@ export class AuthService {
       }
       const hash = await bcrypt.hash(password, 10);
       await this.userRepository.save({ email,adresse, password: hash, new_password:hash });
+      await this.sendEmailService.sendWelcomeEmail(email);
       return { message: 'Inscription Reussie' };
  }
 
@@ -54,13 +56,13 @@ export class AuthService {
            password : hashedPassword,
            new_password : hashedPassword,
       });      
-          const verification = await this.verificationRepository.save({
+          await this.verificationRepository.save({
             token: this.randomString(50),
             user: newCompanyAccount,
             type: 'Creating New Account',
           });
-          console.log(verification);
-      return { message: "Inscription Partenaire Reussie,votre compte est en cours d'activation ! Vous recevrez un mail !"};
+        await this.sendEmailService.sendWelcomeEmail(email);
+      return { message: "Inscription Réussie, votre compte est en cours d'activation ! Vous recevrez un mail !"};
  }
 
  async registerParticulier(telephone: string,birthDate: Date, adresse:string, password: string,new_password:string): Promise<{ message: string}> {
@@ -92,7 +94,7 @@ export class AuthService {
            password : hashedPassword,
            new_password : hashedPassword,
       });
-      return { message: "Inscription Reussie,veuillez vous connecter !"};
+      return { message: "Inscription Réussie, veuillez vous connecter !"};
  }
 
   async loginAdmin(email: string, password: string): Promise<string> {
@@ -127,8 +129,10 @@ export class AuthService {
       if (user.verified == false){
           throw new UnauthorizedException("Votre compte n'est pas encore activé !");
       }
-      const payload = { userId: user.id, role:user.role };
-      const token = this.jwtService.sign(payload); 
+      const payload = { userId: user.id, user:user, role:user.role };
+      const token = this.jwtService.sign(payload);
+      user.token = token;
+      console.log(user.token);
       return {token,user};
   }
 
@@ -182,8 +186,8 @@ export class AuthService {
       const users = await this.userRepository.find({});
       return users;
     } catch (error) {
-      this.logger.error(`An error occurred while retrieving users: ${error.message}`);
-      throw new Error('An error occurred while retrieving users');
+      this.logger.error(`Erreur lors du chargement des utilisateurs: ${error.message}`);
+      throw new Error('Erreur lors du chargement des utilisateurs');
     }
   }
 
@@ -192,8 +196,28 @@ export class AuthService {
       const verifications = await this.verificationRepository.find({});
       return verifications;
     } catch (error) {
-      this.logger.error(`An error occurred while retrieving verification: ${error.message}`);
-      throw new Error('An error occurred while retrieving verification');
+      this.logger.error(`Erreur lors du chargement des verifications: ${error.message}`);
+      throw new Error('Erreur lors du chargement des verifications');
+    }
+  }
+
+  async getEntreprises(): Promise<Entreprise[]> {
+    try {
+      const entreprises = await this.entrepriseRepository.find({});
+      return entreprises;
+    } catch (error) {
+      this.logger.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
+    }
+  }
+
+  async getClients(): Promise<Particulier[]> {
+    try {
+      const particuliers = await this.particulierRepository.find({});
+      return particuliers;
+    } catch (error) {
+      this.logger.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
     }
   }
 
@@ -206,5 +230,10 @@ export class AuthService {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
+  }
+
+  public generateNewToken(user:any){
+    const payload = { id: user }
+    return this.jwtService.sign(payload);
   }
 }

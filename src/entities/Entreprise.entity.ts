@@ -38,6 +38,8 @@ export class Entreprise {
   @Column({type:'varchar', length:255, nullable:false})
   @ApiProperty({required:true})
   new_password: string;
+  @Column({type:'text', nullable:true})
+  token: string;
   @Column({ default: false })
   verified: boolean;
   @Column({type:'varchar', length:255, nullable:true})
