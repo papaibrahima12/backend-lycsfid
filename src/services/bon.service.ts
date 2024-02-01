@@ -12,7 +12,34 @@ export class BonService {
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>
     ){}
 
-    async createBon(bonData: Bon, userId: number): Promise<{message:string, bon:Bon}> {
+  //   async createBon(bonData: Bon, userId: number): Promise<{message:string, bon:Bon}> {
+  //   //     const bon = await this.bonModel.findOne({where : { codeReduction: bonData.codeReduction}});
+  //   //     if(bon){
+  //   //        throw new HttpException({
+  //   //       status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //   //       error: 'Ce bon existe deja',
+  //   //     }, HttpStatus.UNPROCESSABLE_ENTITY)
+  //   // }
+  //   if( bonData.dateDebut > bonData.dateFin){
+  //       throw new HttpException({
+  //         status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //         error: 'La date de debut doit etre inferieur à la date de fin',
+  //       }, HttpStatus.UNPROCESSABLE_ENTITY)
+  //   }
+  //     const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
+
+  //         if (!entreprise) {
+  //           throw new HttpException({
+  //             status: HttpStatus.NOT_FOUND,
+  //             error: 'Entreprise non trouvée',
+  //           }, HttpStatus.NOT_FOUND);
+  //         }  
+  //         bonData.entreprise = entreprise; 
+  //         await this.bonModel.save(bonData);
+  //     return {message : "Bon crée avec succès", bon:bonData};
+
+  // }
+    async createBon(bonData: Bon, userId: number, file?: Express.Multer.File): Promise<{message:string, bon:Bon}> {
         const bon = await this.bonModel.findOne({where : { codeReduction: bonData.codeReduction}});
         if(bon){
            throw new HttpException({
@@ -26,6 +53,9 @@ export class BonService {
           error: 'La date de debut doit etre inferieur à la date de fin',
         }, HttpStatus.UNPROCESSABLE_ENTITY)
     }
+    if (file) {
+      const uploadedImage = await this.upload(file);
+      bonData.image = uploadedImage;
       const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
 
           if (!entreprise) {
@@ -37,43 +67,13 @@ export class BonService {
           bonData.entreprise = entreprise; 
           await this.bonModel.save(bonData);
       return {message : "Bon crée avec succès", bon:bonData};
-
+    }else{
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'Vous devez charger une image',
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+    }
   }
-  //   async createBon(bonData: Bon, userId: number, file?: Express.Multer.File): Promise<{message:string, bon:Bon}> {
-  //       const bon = await this.bonModel.findOne({where : { codeReduction: bonData.codeReduction}});
-  //       if(bon){
-  //          throw new HttpException({
-  //         status: HttpStatus.UNPROCESSABLE_ENTITY,
-  //         error: 'Ce bon existe deja',
-  //       }, HttpStatus.UNPROCESSABLE_ENTITY)
-  //   }
-  //   if( bonData.dateDebut > bonData.dateFin){
-  //       throw new HttpException({
-  //         status: HttpStatus.UNPROCESSABLE_ENTITY,
-  //         error: 'La date de debut doit etre inferieur à la date de fin',
-  //       }, HttpStatus.UNPROCESSABLE_ENTITY)
-  //   }
-  //   if (file) {
-  //     const uploadedImage = await this.upload(file);
-  //     bonData.image = uploadedImage;
-  //     const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
-
-  //         if (!entreprise) {
-  //           throw new HttpException({
-  //             status: HttpStatus.NOT_FOUND,
-  //             error: 'Entreprise non trouvée',
-  //           }, HttpStatus.NOT_FOUND);
-  //         }  
-  //         bonData.entreprise = entreprise; 
-  //         await this.bonModel.save(bonData);
-  //     return {message : "Bon crée avec succès", bon:bonData};
-  //   }else{
-  //       throw new HttpException({
-  //         status: HttpStatus.UNPROCESSABLE_ENTITY,
-  //         error: 'Vous devez charger une image',
-  //       }, HttpStatus.UNPROCESSABLE_ENTITY)
-  //   }
-  // }
 
  async updateBon(id: number, bonData: Bon, file?: Express.Multer.File): Promise<{ message: string; bon: Bon }> {
   const existingBon = await this.bonModel.findOne({ where: { id: id } });

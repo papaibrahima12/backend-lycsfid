@@ -21,43 +21,69 @@ import {
   ApiBody,
   ApiParam,
   ApiQuery,
-  ApiConsumes
+  ApiConsumes,
 } from '@nestjs/swagger';
 
 @Controller('api/v1')
 @UseGuards(CompanyGuard)
-@ApiTags('bons') 
+@ApiTags('bons')
 @ApiBearerAuth()
 export class BonController {
   constructor(private bonService: BonService) {}
 
   @Post('company/bon/add')
-  // @UseInterceptors(FileInterceptor('image'))
-  // @ApiConsumes('multipart/form-data') // Indique que cette route consomme des données multipart (pour les fichiers)
-  @ApiBody({schema:{ type: 'object',
+  @UseInterceptors(FileInterceptor('image'))
+  @ApiConsumes('multipart/form-data') // Indique que cette route consomme des données multipart (pour les fichiers)
+  @ApiBody({
+    schema: {
+      type: 'object',
       properties: {
-        nomBon: { type: 'string', nullable:false },
-        dateDebut: { type: 'string',  format:'date' },
-        dateFin: { type: 'string', format:'date' },
+        nomBon: { type: 'string', nullable: false },
+        dateDebut: { type: 'string', format: 'date' },
+        dateFin: { type: 'string', format: 'date' },
         typeBon: { type: 'string' },
-        typeReduction: { type:'enum', enum:['montant','taux'] },
+        typeReduction: { type: 'enum', enum: ['montant', 'taux'] },
         codeReduction: { type: 'string' },
         reduction: { type: 'string' },
-        ageCible : {type:'enum',  enum:['10-20ans','20-30ans','30-50ans','50-60ans','60-plus']},
-        sexeCible : {type:'enum', enum:['Masculin','Feminin']},
-        localisation : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
-        // image: {
-        //   type: 'string',
-        //   format: 'binary',
-        // },
-      },description: 'Données pour créer un bon' }})
+        ageCible: {
+          type: 'enum',
+          enum: ['10-20ans', '20-30ans', '30-50ans', '50-60ans', '60-plus'],
+        },
+        sexeCible: { type: 'enum', enum: ['Masculin', 'Feminin'] },
+        localisation: {
+          type: 'enum',
+          enum: [
+            'Dakar',
+            'Thies',
+            'Diourbel',
+            'Fatick',
+            'Kaffrine',
+            'Kaolack',
+            'Kedougou',
+            'Kolda',
+            'Louga',
+            'Matam',
+            'Saint-Louis',
+            'Sedhiou',
+            'Tambacounda',
+            'Ziguinchor',
+          ],
+        },
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      description: 'Données pour créer un bon',
+    },
+  })
   async createBon(
-    @Body() bonData: any,
-    // @UploadedFile() file: Express.Multer.File,
+    @Body() bonData: Bon,
+    @UploadedFile() file: Express.Multer.File,
     @Request() request: { user: { userId: number } },
   ): Promise<any> {
     const userId = request['user'].userId;
-    return this.bonService.createBon(bonData, userId);
+    return this.bonService.createBon(bonData, userId, file);
   }
 
   @Put('company/bon/update/:id')
@@ -87,7 +113,9 @@ export class BonController {
     description: "Limite d'éléments par page",
     required: false,
   })
-  async getBons(@Request() request: { user: { userId: number } }): Promise<Bon[]> {
+  async getBons(
+    @Request() request: { user: { userId: number } },
+  ): Promise<Bon[]> {
     const userId = request['user'].userId;
     return this.bonService.getBons(userId);
   }

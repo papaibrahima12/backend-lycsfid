@@ -30,7 +30,7 @@ export class CampagneController {
           format: 'binary',
         },
       },description: 'Données pour créer une campagne' }})
-    async createCampagne(@Body() campagneData: any,
+    async createCampagne(@Body() campagneData: Campagne,
                          @UploadedFile() file: Express.Multer.File,
                          @Request() request: { user: { userId: number } }): Promise<any> {
         const userId = request['user'].userId;

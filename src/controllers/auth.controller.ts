@@ -52,14 +52,7 @@ export class AuthController {
     },
     description: 'Inscription Entreprise',
   })
-  async registerCompany(@Body() companyInfo: {
-    email: string;
-    telephone: string;
-    adresse:string;
-    ninea: string;
-    password: string;
-    new_password:string;
-  }): Promise<{ message: string }> {
+  async registerCompany(@Body() companyInfo: Entreprise): Promise<{ message: string }> {
     await this.userAuthService.registerCompany(companyInfo.email, companyInfo.telephone,companyInfo.adresse, companyInfo.ninea, companyInfo.password,companyInfo.new_password);
     return { message: 'Inscription reussie, vous recevrez un email dès que le compte sera activé !' };
   }
@@ -70,7 +63,7 @@ export class AuthController {
       type: 'object',
       properties: {
         telephone : {type:'string'},
-        birthDate : {type:'string', format: "date-time"},
+        birthDate : {type:'string', format: "date"},
         adresse : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
         password : {type: 'string'},
         new_password : {type:'string'},
@@ -78,13 +71,7 @@ export class AuthController {
     },
     description: 'Inscription Client',
   })
-  async registerClient(@Body() clientInfo: {
-    telephone: string;
-    birthDate:Date;
-    adresse: string;
-    password: string;
-    new_password:string;
-  }): Promise<{ message: string }> {
+  async registerClient(@Body() clientInfo: Particulier): Promise<{ message: string }> {
     await this.userAuthService.registerParticulier(clientInfo.telephone,clientInfo.birthDate, clientInfo.adresse, clientInfo.password,clientInfo.new_password);
     return { message: 'Inscription reussie, Veuillez vous connecter !' };
   }
