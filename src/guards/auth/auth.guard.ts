@@ -13,10 +13,12 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException('Token introuvable ');
     }
+    this.jwtService.verify(token, secretKey)
     try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,
       });
+      
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException("Vous n'etes pas autorisé à accéder à cette ressource !");

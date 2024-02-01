@@ -17,7 +17,7 @@ import { Session } from 'src/guards/auth/session';
     TypeOrmModule.forFeature([User,Entreprise,Particulier,Verification]),
     JwtModule.register({
       secret: secretKey.secret,
-      signOptions: { expiresIn: '1h' }, 
+      signOptions: { expiresIn: '30s' }, 
     }),
   ],
   controllers: [AuthController],
