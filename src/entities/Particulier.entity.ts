@@ -36,12 +36,12 @@ export class Particulier {
   role: string;
 
   @IsNotEmpty({message: "Le mot de passe est requis !"})
-  @MinLength(6,{message:"Revoyez le nombre de caracteres svp, le mot de passe doit etre au minimum 8 caracteres"})
+  @MinLength(6,{message:"Revoyez le nombre de caracteres svp, le mot de passe doit etre au minimum 6 caracteres"})
   @Column({type:'varchar', length:255, nullable:false})
   password: string;
 
   @IsNotEmpty({message: "La confirmation du mot de passe est requise !"})
-  @MinLength(6,{message:"Revoyez le nombre de caracteres svp, la confirmation du mot de passe doit etre au minimum 8 caracteres"})
+  @MinLength(6,{message:"Revoyez le nombre de caracteres svp, la confirmation du mot de passe doit etre au minimum 6 caracteres"})
   @Column({type:'varchar', length:255, nullable:false})
   new_password: string;
 
