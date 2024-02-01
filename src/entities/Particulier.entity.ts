@@ -12,8 +12,8 @@ export class Particulier {
   @Column({type:'varchar', length:255, nullable:true, unique:false})
   nom: string;
 
-  @IsString({message: "L'email doit etre une chaine de caractere"})
-  @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,3}$/g,{message:"Le format de l'email doit etre : xxx@xxx.xxx "})
+  // @IsString({message: "L'email doit etre une chaine de caractere"})
+  // @Matches(/^[\w-\.]+@([\w-]+\.)+[\w-]{2,3}$/g,{message:"Le format de l'email doit etre : xxx@xxx.xxx "})
   @Column({type:'varchar', length:40, nullable:true, unique:true})
   email: string;
 
