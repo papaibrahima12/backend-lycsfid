@@ -28,8 +28,8 @@ export class Bon {
   @ApiPropertyOptional()
   typeBon: string;
 
-  @IsEnum(['montant', 'taux'],{message: 'Veuillez selectionner un type de reduction valide valide' })
-  @Column({type:'enum', enum:['montant','taux']})
+  @IsEnum(['montant', 'pourcentage'],{message: 'Veuillez selectionner un type de reduction valide' })
+  @Column({type:'enum', enum:['montant','pourcentage']})
   @ApiProperty({required:true})
   typeReduction: string;
 
