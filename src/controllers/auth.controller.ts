@@ -115,7 +115,6 @@ export class AuthController {
     },
     description: 'Connexion Entreprise',
   })
-  @ApiBearerAuth() 
   async loginCompany(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
     const { email, password } = body;
     const result = await this.userAuthService.loginCompany(email, password);
@@ -243,12 +242,12 @@ export class AuthController {
   //   });
   // }
 
-  @Get('company/logout')
-  @UseGuards(CompanyGuard)
-  @ApiBearerAuth() 
-  async logoutCompany(@Req() req : Request,@Res() res:Response): Promise<any> {
-    req.session.destroy(() => {
-     return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
-    });
-  }
+  // @Get('company/logout')
+  // @UseGuards(CompanyGuard)
+  // @ApiBearerAuth() 
+  // async logoutCompany(@Req() req : Request,@Res() res:Response): Promise<any> {
+  //   req.session.destroy(() => {
+  //    return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
+  //   });
+  // }
 }

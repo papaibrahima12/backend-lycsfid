@@ -21,12 +21,14 @@ import {
   ApiParam,
   ApiQuery,
   ApiConsumes,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 
 
 
 @Controller('api/v1')
 @UseGuards(CompanyGuard)
+@ApiBearerAuth() 
 @ApiTags('bons')
 export class BonController {
   constructor(private bonService: BonService) {}
