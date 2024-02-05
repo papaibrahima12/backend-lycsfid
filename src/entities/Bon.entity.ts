@@ -2,6 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { Entreprise } from "./Entreprise.entity";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from "class-validator";
+import { Region } from "./Region.entity";
 
 @Entity()
 export class Bon {
@@ -52,10 +53,20 @@ export class Bon {
   @ApiProperty()
   sexeCible: string;
 
-  @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
-  @Column({type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
+  @IsEnum(['Regions'],{message: 'Veuillez selectionner une type valide' })
+  @Column({type:'enum', enum:['Regions'], default:'Regions'})
   @ApiProperty()
-  localisation: string;
+  typeDeCible: string;
+
+  @IsNotEmpty({ message: 'Veuillez selectionner une adresse valide' })
+  @Column({
+        type: 'jsonb',
+        array: false,
+        default: () => "'[]'",
+        nullable: false,
+    })
+  @ApiProperty({ isArray: true, example: ['Dakar', 'Thies', '...'] })
+  localisation: Array<{name:string}>;
 
   @Column({type:'varchar',length:255})
   @ApiProperty()

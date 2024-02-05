@@ -24,7 +24,11 @@ export class CampagneController {
         dateFin: { type: 'string', format:'date' },
         ageCible : {type:'enum',  enum:['10-20ans','20-30ans','30-50ans','50-60ans','60-plus']},
         sexeCible : {type:'enum', enum:['Masculin','Feminin']},
-        localisation : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
+        typeDeCible: { type: 'enum', enum: ['Regions'] },
+        localisation: {
+        type: 'array',
+        items: { type: 'string', enum: ['Dakar', 'Thies', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack', 'Kedougou', 'Kolda', 'Louga', 'Matam', 'Saint-Louis', 'Sedhiou', 'Tambacounda', 'Ziguinchor'] },
+        },
         image: {
           type: 'string',
           format: 'binary',

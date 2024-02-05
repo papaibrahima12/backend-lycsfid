@@ -1,14 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import * as cookieParser from 'cookie-parser';
 import * as session from 'express-session';
-import * as passport from 'passport';
 import * as process from 'process';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import * as passport from 'passport';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-
+  app.use(cookieParser());
+  app.use(
+      session({
+        secret: "0a6b944d-d2fb-46fc-a85e-0295c986cd9fJKAJKLFAfsuiwegnvjkesdjeknsd",
+        resave: false,
+        saveUninitialized: false,
+      })
+    )
+  app.use(passport.initialize())
+  app.use(passport.session())
   const options = new DocumentBuilder()
     .setTitle('Api Production LYCS FID')
     .setDescription('')

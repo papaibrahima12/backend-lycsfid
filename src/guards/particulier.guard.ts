@@ -1,40 +1,41 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { secretKey } from './config';
 import { Request } from 'express';
-
+import { secretKey } from './auth/config';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
- constructor(private jwtService: JwtService) {}
+export class ParticulierGuard implements CanActivate {
+  constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractJWTFromCookie(request);
     if (!token) {
-      throw new UnauthorizedException('Accès non authorisé ! ');
+      throw new UnauthorizedException("Session expirée, veuillez vous connecter !");
     }
-    this.jwtService.verify(token, secretKey)
-    try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,
       });
-      if (payload.role !== 'admin') {
-        throw new UnauthorizedException('Seuls les administrateurs peuvent accéder à cette ressource');
+      if (payload.role !== 'client') {
+        throw new UnauthorizedException('Seuls les clients peuvent accéder à cette ressource');
       }
       console.log(payload);
-      
-      request['user'] = payload;
-    } catch {
-      throw new UnauthorizedException("Vous n'etes pas autorisé à accéder à cette ressource !");
+      if (payload.userId) {
+      request['userId'] = payload.userId;
+    } else {
+      throw new UnauthorizedException("Les informations sur le client sont introuvables");
     }
+      request['user'] = payload;
+      console.log('test',request['user'].userId)
     return true;
   }
+
   private extractTokenFromHeader(request: { headers: { authorization?: string } }): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
-  private extractJWTFromCookie(req: Request): string | null {
+
+   private extractJWTFromCookie(req: Request): string | null {
     if (req.cookies && req.cookies.token) {
       return req.cookies.token;
     }

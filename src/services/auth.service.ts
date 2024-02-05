@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus, NotAcceptableException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -97,7 +97,7 @@ export class AuthService {
       return { message: "Inscription Réussie, veuillez vous connecter !"};
  }
 
-  async loginAdmin(email: string, password: string): Promise<string> {
+  async loginAdmin(email: string, password: string): Promise<{ token: string; user: User }> {
       const user = await this.userRepository.findOne({ where:{ email: email }});
       if (!user) {
         throw new HttpException({
@@ -109,9 +109,9 @@ export class AuthService {
       if (!passwordMatch) {
         throw new UnauthorizedException('Mot de passe incorrect');
       }
-      const payload = { userId: user.id, role: user.role };
+      const payload = { userId: user.id, user:user, role: user.role };
       const token = this.jwtService.sign(payload); 
-      return token;
+      return {token,user};
   }
 
   async loginCompany(email: string, password: string): Promise<{ token: string; user: Entreprise }> {
@@ -131,9 +131,19 @@ export class AuthService {
       }
       const payload = { userId: user.id, user:user, role:user.role };
       const token = this.jwtService.sign(payload);
-      user.token = token;
-      console.log(user.token);
       return {token,user};
+  }
+
+  async validatePartner(email:string,password:string){
+    const user = await this.getPartner(email);
+    const passwordValid = await bcrypt.compare(password, user.password)
+        if (!user) {
+            throw new NotAcceptableException('could not find the user');
+          }
+        if (user && passwordValid) {
+          return user;
+        }
+        return null;
   }
 
   async loginParticulier(telephone: string, password: string): Promise<{ token: string; user: Particulier }> {
@@ -232,8 +242,9 @@ export class AuthService {
     return result;
   }
 
-  public generateNewToken(user:any){
-    const payload = { id: user }
-    return this.jwtService.sign(payload);
+  async getPartner(email:string){
+    const emailPartenaire = email.toLowerCase();
+    const user = await this.entrepriseRepository.findOne({ where:{ email: emailPartenaire} });
+    return user;
   }
 }

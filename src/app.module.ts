@@ -6,6 +6,10 @@ import { UserAuthModule } from './user-auth/user-auth.module';
 import { MailModule } from './mailer/mailer.module';
 import { FileModuleModule } from './file-module/file-module.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { EntrepriseController } from './controllers/entreprise.controller';
+import { ParticulierModule } from './modules/particulier.module';
+import { EntrepriseModule } from './modules/entreprise.module';
+import { EntrepriseService } from './services/entreprise.service';
 
 
 @Module({
@@ -28,7 +32,9 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     }),
     UserAuthModule,
     MailModule,
-    FileModuleModule
+    FileModuleModule,
+    ParticulierModule,
+    EntrepriseModule
   ],
   controllers: [AppController],
   providers: [AppService],

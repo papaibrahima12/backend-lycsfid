@@ -6,9 +6,7 @@ export class Session extends PassportSerializer {
     done(null, user);
   }
 
-  deserializeUser(payload: string, 
-                  done: (err: Error, payload: string) => void
-    ): void {
+  deserializeUser(payload: string,done: (err: Error, payload: string) => void): void {
     done(null, payload);
   }
 }

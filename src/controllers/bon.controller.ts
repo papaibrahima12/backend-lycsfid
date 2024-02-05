@@ -17,23 +17,22 @@ import { CompanyGuard } from 'src/guards/company.guard';
 import { BonService } from 'src/services/bon.service';
 import {
   ApiTags,
-  ApiBearerAuth,
   ApiBody,
   ApiParam,
   ApiQuery,
   ApiConsumes,
 } from '@nestjs/swagger';
+import { Region } from 'src/entities/Region.entity';
 
 @Controller('api/v1')
 @UseGuards(CompanyGuard)
 @ApiTags('bons')
-@ApiBearerAuth()
 export class BonController {
   constructor(private bonService: BonService) {}
 
   @Post('company/bon/add')
   @UseInterceptors(FileInterceptor('image'))
-  @ApiConsumes('multipart/form-data') // Indique que cette route consomme des données multipart (pour les fichiers)
+  @ApiConsumes('multipart/form-data')
   @ApiBody({
     schema: {
       type: 'object',
@@ -42,7 +41,7 @@ export class BonController {
         dateDebut: { type: 'string', format: 'date' },
         dateFin: { type: 'string', format: 'date' },
         typeBon: { type: 'string' },
-        typeReduction: { type: 'enum', enum: ['montant', 'taux'] },
+        typeReduction: { type: 'enum', enum: ['montant', 'pourcentage'] },
         codeReduction: { type: 'string' },
         reduction: { type: 'string' },
         ageCible: {
@@ -50,24 +49,10 @@ export class BonController {
           enum: ['10-20ans', '20-30ans', '30-50ans', '50-60ans', '60-plus'],
         },
         sexeCible: { type: 'enum', enum: ['Masculin', 'Feminin'] },
+        typeDeCible: { type: 'enum', enum: ['Regions'] },
         localisation: {
-          type: 'enum',
-          enum: [
-            'Dakar',
-            'Thies',
-            'Diourbel',
-            'Fatick',
-            'Kaffrine',
-            'Kaolack',
-            'Kedougou',
-            'Kolda',
-            'Louga',
-            'Matam',
-            'Saint-Louis',
-            'Sedhiou',
-            'Tambacounda',
-            'Ziguinchor',
-          ],
+        type: 'array',
+        items: { type: 'string', enum: ['Dakar', 'Thies', 'Diourbel', 'Fatick', 'Kaffrine', 'Kaolack', 'Kedougou', 'Kolda', 'Louga', 'Matam', 'Saint-Louis', 'Sedhiou', 'Tambacounda', 'Ziguinchor'] },
         },
         image: {
           type: 'string',

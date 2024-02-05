@@ -2,6 +2,7 @@ import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
 import { secretKey } from './auth/config';
+import { Request } from 'express';
 
 @Injectable()
 export class CompanyGuard implements CanActivate {
@@ -9,9 +10,9 @@ export class CompanyGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractJWTFromCookie(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("Session expirée, veuillez vous connecter !");
     }
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,
@@ -25,8 +26,6 @@ export class CompanyGuard implements CanActivate {
     } else {
       throw new UnauthorizedException("Les informations sur l'entreprise sont introuvables");
     }
-
-
       request['user'] = payload;
       console.log('test',request['user'].userId)
     return true;
@@ -35,5 +34,12 @@ export class CompanyGuard implements CanActivate {
   private extractTokenFromHeader(request: { headers: { authorization?: string } }): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
+  }
+
+   private extractJWTFromCookie(req: Request): string | null {
+    if (req.cookies && req.cookies.token) {
+      return req.cookies.token;
+    }
+    return null;
   }
 }

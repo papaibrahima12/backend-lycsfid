@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, UseGuards, Param, Req, HttpStatus, Session } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards, Param, Req, HttpStatus, Res } from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
 import { Verification } from 'src/entities/Verification.entity';
@@ -8,7 +8,11 @@ import { AuthService } from 'src/services/auth.service';
 import { SendEmailService } from 'src/services/send-email.service';
 import { VerificationService } from 'src/services/verification.service';
 import { ApiTags, ApiOperation,ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
+import { Request, Response } from 'express';
+import { JwtAuthGuard } from 'src/guards/auth/jwt-auth.guard';
+import { LocalAuthGuard } from 'src/guards/auth/local.auth.guard';
+import { JwtStrategy } from 'src/strategies/jwt.strategy';
+import { CompanyGuard } from 'src/guards/company.guard';
 
 @ApiTags('Authentification for all users')
 @Controller('api/auth')
@@ -87,10 +91,16 @@ export class AuthController {
     },
     description: 'Connexion Admin',
   })
-  async loginAdmin(@Body() body: { email: string; password: string }): Promise<{ message: string; token: string }> {
+  async loginAdmin(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
     const { email, password } = body;
-    const token = await this.userAuthService.loginAdmin(email, password);
-    return { message: 'Connexion Reussie', token };
+    const result = await this.userAuthService.loginAdmin(email, password);
+    res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
+      })
+      .send({ message: 'Connexion Réussie', user:result.user  });
   }
 
   @Post('company/login')
@@ -104,10 +114,16 @@ export class AuthController {
     },
     description: 'Connexion Entreprise',
   })
-  async loginCompany(@Body() body: { email: string; password: string }): Promise<{ message: string; token: string; user: Entreprise }> {
+  async loginCompany(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
     const { email, password } = body;
     const result = await this.userAuthService.loginCompany(email, password);
-    return { message: 'Connexion Reussie', token:result.token, user:result.user };
+    res.cookie('token', result.token, {
+        httpOnly: true,
+        secure: false,
+        sameSite: 'lax',
+        expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
+      })
+      .send({ message: 'Connexion Réussie', user:result.user  });
   }
 
   @Post('particulier/login')
@@ -128,7 +144,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth() 
+  // @ApiBearerAuth() 
   @Get('admin/verifyCompany/:token')
   async verifyCompanyAccount(@Param('token') token: string) {
     const result = await this.verificationService.verifyCompanyAccount(token);
@@ -146,7 +162,7 @@ export class AuthController {
     description: 'Reverification Entreprise',
   })
   @UseGuards(AuthGuard)
-  @ApiBearerAuth() 
+  // @ApiBearerAuth() 
   async reVerifyCompanyAccount(@Body() body :{email: string}) {
     const { email } = body;
     const result = await this.verificationService.reVerifyCompanyAccount(email);
@@ -189,21 +205,21 @@ export class AuthController {
   
   @Get('users')
   @UseGuards(AuthGuard)
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async getUsers(): Promise<User[]> {
     return this.userAuthService.getUsers();
   }
 
   @Get('particuliers')
   @UseGuards(AuthGuard)
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async getParticuliers(): Promise<Particulier[]> {
     return this.userAuthService.getClients();
   }
 
   @Get('companies')
   @UseGuards(AuthGuard)
-  @ApiBearerAuth()
+  // @ApiBearerAuth()
   async getEntreprises(): Promise<Entreprise[]> {
     return this.userAuthService.getEntreprises();
   }
@@ -216,15 +232,19 @@ export class AuthController {
     return this.userAuthService.getVerifications();
   }
 
-  @Get('logout')
+  @Get('admin/logout')
   @UseGuards(AuthGuard)
-  @ApiBearerAuth() 
-  async logout(@Req() req : Request): Promise<any> {
+  async logout(@Req() req : Request,@Res() res:Response): Promise<any> {
     req.session.destroy(() => {
-      return {
-        message: 'Logout successful',
-        statusCode: HttpStatus.OK,
-      };
+     return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
+    });
+  }
+
+  @Get('company/logout')
+  @UseGuards(CompanyGuard)
+  async logoutCompany(@Req() req : Request,@Res() res:Response): Promise<any> {
+    req.session.destroy(() => {
+     return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
     });
   }
 }

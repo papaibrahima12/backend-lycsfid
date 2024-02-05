@@ -1,3 +1,4 @@
+import { Campagne } from 'src/entities/Campagne.entity';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { secretKey } from 'src/guards/auth/config';
@@ -10,17 +11,22 @@ import { Verification } from 'src/entities/Verification.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { User } from 'src/entities/User.entity';
-import { Session } from 'src/guards/auth/session';
+import { Session } from 'src/guards/auth/session.serializer';
+import { LocalStrategy } from 'src/strategies/local.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { JwtStrategy } from 'src/strategies/jwt.strategy';
+import { Bon } from 'src/entities/Bon.entity';
 
 @Module({
     imports: [
-    TypeOrmModule.forFeature([User,Entreprise,Particulier,Verification]),
+    PassportModule,
+    TypeOrmModule.forFeature([User,Entreprise,Particulier,Bon,Campagne,Verification]),
     JwtModule.register({
       secret: secretKey.secret,
       signOptions: { expiresIn: '2h' }, 
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, VerificationService,Session, SendEmailService],
+  providers: [AuthService, LocalStrategy, JwtStrategy, VerificationService, Session, SendEmailService],
 })
 export class UserAuthModule {}

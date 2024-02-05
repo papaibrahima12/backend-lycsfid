@@ -37,11 +37,15 @@ export class Campagne{
   @ApiProperty()
   sexeCible:string;
 
-  @IsNotEmpty({message: "L'adresse ne doit pas etre vide !"})
-  @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
-  @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
-  @ApiProperty()
-  localisation: string;
+  @IsNotEmpty({ message: 'Veuillez selectionner une adresse valide' })
+  @Column({
+        type: 'jsonb',
+        array: false,
+        default: () => "'[]'",
+        nullable: false,
+    })
+  @ApiProperty({ isArray: true, example: ['Dakar', 'Thies', '...'] })
+  localisation: Array<{name:string}>;
 
   @Column({type:'text'})
   @ApiProperty()
