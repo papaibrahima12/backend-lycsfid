@@ -9,9 +9,9 @@ export class ParticulierGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const token = this.extractJWTFromCookie(request);
+    const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException("Session expirée, veuillez vous connecter !");
+      throw new UnauthorizedException("Token invalide ou inexistant !");
     }
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,

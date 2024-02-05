@@ -1,5 +1,5 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Bon } from 'src/entities/Bon.entity';
 import { ParticulierGuard } from 'src/guards/particulier.guard';
 import { ParticulierService } from 'src/services/particulier.service';
@@ -12,6 +12,7 @@ export class ParticulierController {
 
   @Get('particulier/bons/all')
   @UseGuards(ParticulierGuard)
+  @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
     name: 'limit',

@@ -27,6 +27,6 @@ import { Bon } from 'src/entities/Bon.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, LocalStrategy, JwtStrategy, VerificationService, Session, SendEmailService],
+  providers: [AuthService, VerificationService, Session, SendEmailService],
 })
 export class UserAuthModule {}

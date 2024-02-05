@@ -186,7 +186,6 @@ export class AuthService {
       company.verificationCode = null;
       this.entrepriseRepository.save(company);
       return { message: "Mot de passe modifié avec succès!"};
-
   }
 
   async changePasswordParticulier(){}

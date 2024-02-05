@@ -94,13 +94,14 @@ export class AuthController {
   async loginAdmin(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
     const { email, password } = body;
     const result = await this.userAuthService.loginAdmin(email, password);
-    res.cookie('token', result.token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
-        expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
-      })
-      .send({ message: 'Connexion Réussie', user:result.user  });
+    // res.cookie('token', result.token, {
+    //     httpOnly: true,
+    //     secure: false,
+    //     sameSite: 'lax',
+    //     expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
+    //   })
+    //   .send({ message: 'Connexion Réussie', user:result.user  });
+      return { message: 'Connexion Réussie',token:result.token, user:result.user  };
   }
 
   @Post('company/login')
@@ -114,16 +115,18 @@ export class AuthController {
     },
     description: 'Connexion Entreprise',
   })
+  @ApiBearerAuth() 
   async loginCompany(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
     const { email, password } = body;
     const result = await this.userAuthService.loginCompany(email, password);
-    res.cookie('token', result.token, {
-        httpOnly: true,
-        secure: false,
-        sameSite: 'lax',
-        expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
-      })
-      .send({ message: 'Connexion Réussie', user:result.user  });
+    // res.cookie('token', result.token, {
+    //     httpOnly: true,
+    //     secure: false,
+    //     sameSite: 'lax',
+    //     expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
+    //   })
+    //   .send({ message: 'Connexion Réussie', user:result.user  });
+    return { message: 'Connexion Réussie',token:result.token, user:result.user  };
   }
 
   @Post('particulier/login')
@@ -137,6 +140,7 @@ export class AuthController {
     },
     description: 'Connexion Client',
   })
+  @ApiBearerAuth() 
   async loginParticulier(@Body() body: { telephone: string; password: string }): Promise<{ message: string; token: string; user: Particulier }> {
     const { telephone, password } = body;
     const result = await this.userAuthService.loginParticulier(telephone, password);
@@ -144,7 +148,7 @@ export class AuthController {
   }
 
   @UseGuards(AuthGuard)
-  // @ApiBearerAuth() 
+  @ApiBearerAuth() 
   @Get('admin/verifyCompany/:token')
   async verifyCompanyAccount(@Param('token') token: string) {
     const result = await this.verificationService.verifyCompanyAccount(token);
@@ -162,7 +166,7 @@ export class AuthController {
     description: 'Reverification Entreprise',
   })
   @UseGuards(AuthGuard)
-  // @ApiBearerAuth() 
+  @ApiBearerAuth() 
   async reVerifyCompanyAccount(@Body() body :{email: string}) {
     const { email } = body;
     const result = await this.verificationService.reVerifyCompanyAccount(email);
@@ -205,21 +209,21 @@ export class AuthController {
   
   @Get('users')
   @UseGuards(AuthGuard)
-  // @ApiBearerAuth()
+  @ApiBearerAuth()
   async getUsers(): Promise<User[]> {
     return this.userAuthService.getUsers();
   }
 
   @Get('particuliers')
   @UseGuards(AuthGuard)
-  // @ApiBearerAuth()
+  @ApiBearerAuth()
   async getParticuliers(): Promise<Particulier[]> {
     return this.userAuthService.getClients();
   }
 
   @Get('companies')
   @UseGuards(AuthGuard)
-  // @ApiBearerAuth()
+  @ApiBearerAuth()
   async getEntreprises(): Promise<Entreprise[]> {
     return this.userAuthService.getEntreprises();
   }
@@ -232,16 +236,16 @@ export class AuthController {
     return this.userAuthService.getVerifications();
   }
 
-  @Get('admin/logout')
-  @UseGuards(AuthGuard)
-  async logout(@Req() req : Request,@Res() res:Response): Promise<any> {
-    req.session.destroy(() => {
-     return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
-    });
-  }
+  // @Get('admin/logout')
+  // async logout(@Req() req : Request,@Res() res:Response): Promise<any> {
+  //   req.session.destroy(() => {
+  //    return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
+  //   });
+  // }
 
   @Get('company/logout')
   @UseGuards(CompanyGuard)
+  @ApiBearerAuth() 
   async logoutCompany(@Req() req : Request,@Res() res:Response): Promise<any> {
     req.session.destroy(() => {
      return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});
