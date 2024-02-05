@@ -53,7 +53,7 @@ export class Bon {
   @ApiProperty()
   sexeCible: string;
 
-  @IsEnum(['Regions'],{message: 'Veuillez selectionner une type valide' })
+  @IsEnum(['Regions'],{message: 'Veuillez selectionner un type valide' })
   @Column({type:'enum', enum:['Regions'], default:'Regions'})
   @ApiProperty()
   typeDeCible: string;

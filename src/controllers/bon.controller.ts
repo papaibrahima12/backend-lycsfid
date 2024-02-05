@@ -22,7 +22,8 @@ import {
   ApiQuery,
   ApiConsumes,
 } from '@nestjs/swagger';
-import { Region } from 'src/entities/Region.entity';
+
+
 
 @Controller('api/v1')
 @UseGuards(CompanyGuard)
@@ -104,4 +105,13 @@ export class BonController {
     const userId = request['user'].userId;
     return this.bonService.getBons(userId);
   }
+
+  @Get('company/bon/activate/:id')
+  @ApiParam({ name: 'id', description: 'ID du bon à activer' })
+  async activateBon(@Param('id') id: number, @Request() request: { user: { userId: number }}): Promise<any> {
+    const userId = request['user'].userId;
+    return this.bonService.activateBon(id,userId);
+  }
+
+
 }

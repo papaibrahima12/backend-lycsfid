@@ -84,38 +84,38 @@ async deleteBon(id: number): Promise<{ message: string }> {
 }
 
 
-     async upload(file): Promise<string> {
-        const { originalname } = file;
-        const bucketS3 = 'lycsalliofiles';
-        return this.uploadS3(file.buffer, bucketS3, originalname);
-    }
+  async upload(file): Promise<string> {
+    const { originalname } = file;
+    const bucketS3 = 'lycsalliofiles';
+    return this.uploadS3(file.buffer, bucketS3, originalname);
+}
 
-    async uploadS3(file,bucket, name): Promise<string> {
-        const s3 = this.getS3();
-        const params = {
-            Bucket: bucket,
-            Key: String(name),
-            acl: 'private',
-            Body: file,
-        };
-        console.log(params);
-        return new Promise((resolve, reject) => {
-            s3.upload(params, (err, data) => {
-            if (err) {
-                Logger.error(err);
-                reject(err.message);
-            }
-            resolve(data.Location);
-            });
-        });
-    }
+  async uploadS3(file,bucket, name): Promise<string> {
+      const s3 = this.getS3();
+      const params = {
+          Bucket: bucket,
+          Key: String(name),
+          acl: 'private',
+          Body: file,
+      };
+      console.log(params);
+      return new Promise((resolve, reject) => {
+          s3.upload(params, (err, data) => {
+          if (err) {
+              Logger.error(err);
+              reject(err.message);
+          }
+          resolve(data.Location);
+          });
+      });
+  }
 
-    getS3() {
-        return new AWS.S3({
-            accessKeyId: process.env.accessKEY,
-            secretAccessKey: process.env.secretAccessKey,
-        });
-    }
+  getS3() {
+      return new AWS.S3({
+          accessKeyId: process.env.accessKEY,
+          secretAccessKey: process.env.secretAccessKey,
+      });
+  }
 
      async getBons(userId:number): Promise<Bon[]> {
       try {
@@ -123,8 +123,21 @@ async deleteBon(id: number): Promise<{ message: string }> {
         const bons = await this.bonModel.find({where:{entreprise:entreprise}});
         return bons;
       } catch (error) {
-        this.logger.error(`An error occurred while retrieving bons: ${error.message}`);
-        throw new Error('An error occurred while retrieving bons');
+        this.logger.error(`Erreur lors de la recuperation des bons: ${error.message}`);
+        throw new Error('Erreur lors de la recuperation des bons');
+      }
+  }
+
+  async activateBon(id:number, userId:number): Promise<{message:string}>{
+    try {
+        const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
+        const bon = await this.bonModel.findOne({where:{id: id, entreprise:entreprise}});
+        bon.isActive = true;
+        await this.bonModel.save(bon);
+        return {message: "Bon activé avec succès"};
+      } catch (error) {
+        this.logger.error(`Erreur lors de la recuperation des bons: ${error.message}`);
+        throw new Error('Erreur lors de la recuperation des bons');
       }
   }
 }

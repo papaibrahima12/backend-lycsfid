@@ -37,6 +37,11 @@ export class Campagne{
   @ApiProperty()
   sexeCible:string;
 
+  @IsEnum(['Regions'],{message: 'Veuillez selectionner un type valide' })
+  @Column({type:'enum', enum:['Regions'], default:'Regions'})
+  @ApiProperty()
+  typeDeCible: string;
+
   @IsNotEmpty({ message: 'Veuillez selectionner une adresse valide' })
   @Column({
         type: 'jsonb',
