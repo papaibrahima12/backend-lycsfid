@@ -31,11 +31,16 @@ export class Entreprise {
   @Column({type:'varchar', length:255, nullable:false})
   @ApiProperty({required:true})
   @MinLength(9,{message:"le numero de telephone doit etre au moins 9 chiffres"})
-  @MaxLength(12, {message:"le numero de telephone ne doit pas depasser 12 chiffres"})
+  @MaxLength(12, {message:"le numero de telephone ne doit pas depasser 15 chiffres"})
   telephone: string;
 
   @Column({type:'varchar',default:'entreprise'})
   role: string;
+
+  @IsNotEmpty({message: "Le nom de l'entreprise est requis !"})
+  @Column({type:'varchar', length:255, nullable:true})
+  @ApiProperty({required:true})
+  nomEntreprise:string;
 
   @IsNotEmpty({message: "Le ninea est requis !"})
   @MaxLength(10,{message:"Revoyez le nombre de caracteres svp, le ninea doit etre de 10 caracteres"})

@@ -1,3 +1,4 @@
+import { Program } from 'src/entities/Program.entity';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -10,7 +11,7 @@ import { ParticulierService } from 'src/services/particulier.service';
 
 @Module({
     imports: [
-    TypeOrmModule.forFeature([Entreprise,Particulier,Bon,Campagne]),
+    TypeOrmModule.forFeature([Entreprise, Particulier, Bon, Program, Campagne]),
   ],
   controllers: [ParticulierController],
   providers: [ParticulierService, JwtService],

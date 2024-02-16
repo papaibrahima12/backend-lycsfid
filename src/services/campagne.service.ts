@@ -49,6 +49,21 @@ export class CampagneService {
     }
   }
 
+  async startCampagne(id: number): Promise<{ message: string }> {
+        const existingCampagne = await this.campagneModel.findOne({where:{id:id}});
+        const today = Date.now();
+        if (!existingCampagne) {
+            throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            error: 'Campagne introuvable',
+            }, HttpStatus.NOT_FOUND);
+        }
+        existingCampagne.isActive = true;
+        existingCampagne.status = 'en cours'
+        await this.campagneModel.save(existingCampagne);
+        return { message: 'Campagne activée avec succès !' };
+    }
+
   async updateCampagne(id: number, campagneData: Campagne, file?: Express.Multer.File): Promise<{message:string,campagne:Campagne}> {
     const existingCampagne = await this.campagneModel.findOne({where:{id:id}});
 

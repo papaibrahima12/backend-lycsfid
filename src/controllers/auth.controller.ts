@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, UseGuards, Param, Req, HttpStatus, Res } from '@nestjs/common';
+import { Body, Controller, Post, Get, UseGuards, Param, Res } from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
 import { Verification } from 'src/entities/Verification.entity';
@@ -8,11 +8,7 @@ import { AuthService } from 'src/services/auth.service';
 import { SendEmailService } from 'src/services/send-email.service';
 import { VerificationService } from 'src/services/verification.service';
 import { ApiTags, ApiOperation,ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { Request, Response } from 'express';
-import { JwtAuthGuard } from 'src/guards/auth/jwt-auth.guard';
-import { LocalAuthGuard } from 'src/guards/auth/local.auth.guard';
-import { JwtStrategy } from 'src/strategies/jwt.strategy';
-import { CompanyGuard } from 'src/guards/company.guard';
+import { Response } from 'express';
 
 @ApiTags('Authentification for all users')
 @Controller('api/auth')
@@ -139,7 +135,6 @@ export class AuthController {
     },
     description: 'Connexion Client',
   })
-  @ApiBearerAuth() 
   async loginParticulier(@Body() body: { telephone: string; password: string }): Promise<{ message: string; token: string; user: Particulier }> {
     const { telephone, password } = body;
     const result = await this.userAuthService.loginParticulier(telephone, password);
@@ -149,8 +144,8 @@ export class AuthController {
   @UseGuards(AuthGuard)
   @ApiBearerAuth() 
   @Get('admin/verifyCompany/:token')
-  async verifyCompanyAccount(@Param('token') token: string) {
-    const result = await this.verificationService.verifyCompanyAccount(token);
+  async verifyCompanyAccount(@Param('id') id: number) {
+    const result = await this.verificationService.verifyCompanyAccount(id);
     return result;
   }
 

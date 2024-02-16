@@ -38,7 +38,7 @@ export class Campagne{
   sexeCible:string;
 
   @IsEnum(['Regions'],{message: 'Veuillez selectionner un type valide' })
-  @Column({type:'enum', enum:['Regions'], default:'Regions'})
+  @Column({type:'enum', enum:['Regions'], default:'Regions', nullable:true})
   @ApiProperty()
   typeDeCible: string;
 

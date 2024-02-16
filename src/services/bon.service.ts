@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as AWS from 'aws-sdk';
 import { Bon } from 'src/entities/Bon.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
-import {  Repository, getManager } from 'typeorm';
+import {  Repository } from 'typeorm';
 
 @Injectable()
 export class BonService {
@@ -37,7 +37,7 @@ export class BonService {
               error: 'Entreprise non trouvée',
             }, HttpStatus.NOT_FOUND);
           }
-          bonData.entreprise = entreprise; 
+          bonData.entreprise = entreprise;
           await this.bonModel.save(bonData);
       return {message : "Bon crée avec succès", bon:bonData};
     }else{
@@ -60,6 +60,7 @@ export class BonService {
 
   if (file) {
     const uploadedImage = await this.upload(file);
+    existingBon.image = uploadedImage;
   }
 
   Object.assign(existingBon, bonData);
@@ -121,6 +122,14 @@ async deleteBon(id: number): Promise<{ message: string }> {
       try {
         const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
         const bons = await this.bonModel.find({where:{entreprise:entreprise}});
+         const currentDate = new Date();
+        const expiredBons = await this.bonModel.find({
+          where: { dateFin: currentDate, entreprise:entreprise },
+        });
+        for (const bon of expiredBons) {
+          bon.isActive = false;
+          await this.bonModel.save(bon);
+        }
         return bons;
       } catch (error) {
         this.logger.error(`Erreur lors de la recuperation des bons: ${error.message}`);

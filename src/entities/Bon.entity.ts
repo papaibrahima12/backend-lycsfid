@@ -2,7 +2,6 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "t
 import { Entreprise } from "./Entreprise.entity";
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsEnum, IsNotEmpty } from "class-validator";
-import { Region } from "./Region.entity";
 
 @Entity()
 export class Bon {
@@ -23,7 +22,7 @@ export class Bon {
   @ApiProperty({required:true})
   dateFin: Date;
 
-  @IsNotEmpty({message: "La type de bon est requis !"})
+  @IsNotEmpty({message: "Le type de bon est requis !"})
   @Column({type:'varchar', length:220})
   @ApiPropertyOptional()
   typeBon: string;
@@ -54,7 +53,7 @@ export class Bon {
   sexeCible: string;
 
   @IsEnum(['Regions'],{message: 'Veuillez selectionner un type valide' })
-  @Column({type:'enum', enum:['Regions'], default:'Regions'})
+  @Column({type:'enum', enum:['Regions'], default:'Regions', nullable:true})
   @ApiProperty()
   typeDeCible: string;
 
@@ -72,7 +71,7 @@ export class Bon {
   @ApiProperty()
   image: string;
 
-  @Column({default:false})
+  @Column({default:true})
   isActive: boolean;
 
   @Column({type:'enum', enum:['consommé','non-consommé','cloturé'], default:'non-consommé'})

@@ -50,4 +50,17 @@ export class SendEmailService {
       `
     });
   } 
+
+  async notifyActivationAccount(email: string): Promise<void> {
+    await this.mailerService.sendMail({
+      to: email,
+      from: '"Lycs Allio" <ibousow311@gmail.com>',
+      subject: 'Activation',
+      html: `
+      <p>Bonjour cher partenaire,</p>
+        <p> Bienvenue chez LycsFID ! </p>
+        <p>Votre compte a été activé avec succès, Vous pouvez vous connecter !</p>
+      `
+    });
+  } 
 }

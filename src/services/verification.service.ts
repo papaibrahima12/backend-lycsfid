@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Verification } from 'src/entities/Verification.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { SendEmailService } from './send-email.service';
 
 @Injectable()
 export class VerificationService {
@@ -11,11 +12,12 @@ export class VerificationService {
     private readonly verificationRepository: Repository<Verification>,
     @InjectRepository(Entreprise)
     private readonly entrepriseRepository: Repository<Entreprise>,
+    private sendEmailService:SendEmailService
   ) {}
 
-  async verifyCompanyAccount(token: string): Promise<{ message: string; entreprise: Entreprise }> {
+  async verifyCompanyAccount(id: number): Promise<{ message: string; entreprise: Entreprise }> {
   const verification = await this.verificationRepository.findOne({
-    where: {token:token, type: 'Creating New Account' },  relations: ['user']
+    where: {id:id, type: 'Creating New Account' },  relations: ['user']
   });
 
   if (!verification) {
@@ -34,7 +36,7 @@ export class VerificationService {
     verified: true,
     verifiedAt: new Date(),
   });
-
+  await this.sendEmailService.notifyActivationAccount(existCompanyAccount.email);
   await this.verificationRepository.delete(verification.id);
 
   return { message: 'Compte activé avec succès', entreprise: existCompanyAccount };
@@ -59,7 +61,7 @@ export class VerificationService {
 
   const newVerification = await this.verificationRepository.save({
     token: this.randomString(50),
-    userId: company.id,
+    userId: company,
     type: 'Creating New Account',
   });
 
