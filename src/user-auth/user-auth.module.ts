@@ -12,18 +12,23 @@ import { Particulier } from 'src/entities/Particulier.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { User } from 'src/entities/User.entity';
 import { Session } from 'src/guards/auth/session.serializer';
-import { LocalStrategy } from 'src/strategies/local.strategy';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from 'src/strategies/jwt.strategy';
 import { Bon } from 'src/entities/Bon.entity';
 
 @Module({
-    imports: [
+  imports: [
     PassportModule,
-    TypeOrmModule.forFeature([User,Entreprise,Particulier,Bon,Campagne,Verification]),
+    TypeOrmModule.forFeature([
+      User,
+      Entreprise,
+      Particulier,
+      Bon,
+      Campagne,
+      Verification,
+    ]),
     JwtModule.register({
       secret: secretKey.secret,
-      signOptions: { expiresIn: '2h' }, 
+      signOptions: { expiresIn: '2h' },
     }),
   ],
   controllers: [AuthController],

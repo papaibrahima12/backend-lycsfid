@@ -62,8 +62,10 @@ export class EntrepriseController {
       properties: {
         nomProgram: { type: 'string', nullable: false },
         systemePoint: { type: 'enum', enum: ['palier achat', 'palier seuil'] },
-        montant: { type: 'integer', nullable:true },
-        nombrePoints: { type: 'integer', nullable:true },
+        montantAttribution: { type: 'integer', nullable:true },
+        nombrePointsAttribution: { type: 'integer', nullable:true },
+        montantRedemption: { type: 'integer', nullable:true },
+        nombrePointsRedemption: { type: 'integer', nullable:true },
       },
       description: 'Données pour créer un programme',
     },
@@ -78,6 +80,21 @@ export class EntrepriseController {
   @ApiParam({ name: 'id', description: 'ID du programme à activer' })
   async activateProgram(@Param('id') id: number): Promise<any> {
     return this.entrepriseService.activateProgramme(id);
+  }
+
+  @Post('company/program/attribute')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        clientId: { type: 'integer', nullable:false },
+        montant: { type: 'integer', nullable:false },
+      },
+      description: 'Données pour attribuer des points !',
+    },
+  })  async attributePoints(@Body() infos:{clientId:number, montant:number} ,@Request() request: { user: { userId: number }}): Promise<any> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.attributePoints(userId, infos.clientId, infos.montant);
   }
 
   @Get('company/program/desactivate/:id')

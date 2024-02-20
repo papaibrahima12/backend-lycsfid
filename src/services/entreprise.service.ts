@@ -2,6 +2,7 @@ import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Mecanisme } from 'src/entities/Mecanisme.entity';
+import { Particulier } from 'src/entities/Particulier.entity';
 import { Program } from 'src/entities/Program.entity';
 import { Repository } from 'typeorm';
 
@@ -10,7 +11,8 @@ export class EntrepriseService {
     private readonly logger = new Logger(EntrepriseService.name);
     constructor(@InjectRepository(Mecanisme) private mecanismeModel: Repository<Mecanisme>,
                 @InjectRepository(Program) private programModel: Repository<Program>,
-                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>
+                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
+                @InjectRepository(Particulier) private particulierModel: Repository<Particulier>
     ){}
 
     async createMecanisme(mecanismeData: Mecanisme, userId: number) : Promise<{message:string, mecanisme:Mecanisme}> {
@@ -91,6 +93,63 @@ export class EntrepriseService {
 
     const newProgram = await this.programModel.save(programData);
     return { message: ' Programme créé avec succès !', programme: newProgram };
+  }
+
+  async attributePoints(userId: number, clientId: number, montant: number): Promise<{ message: string }>{
+    const entreprise = await this.entrepriseModel.findOne({ where: { id: userId } });
+    if (!entreprise) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Entreprise non trouvée !',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const particulier = await this.particulierModel.findOne({where: {id: clientId}});
+    if(!particulier){
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Particulier non trouvé !',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const programme = await this.programModel.findOne({where:{entreprise: entreprise , isActive:true}});
+    if(!programme){
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Aucun programme en cours, verifiez vos programmes !',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    var equiPoint = 0;
+    if(programme.systemePoint == 'palier achat'){
+      if(montant < programme.montantAttribution){
+        equiPoint = 0;
+      }else{
+        equiPoint = Math.floor(montant / programme.montantAttribution);
+        console.log('points',Math.floor(equiPoint));
+      }
+      
+    }else if(programme.systemePoint == 'seuil achat'){
+      if(montant < programme.montantAttribution){
+        equiPoint = 0;
+      }else{
+        equiPoint = programme.nombrePointsAttribution;
+      }
+    }
+
+    particulier.soldePoint += equiPoint;
+
+    await this.particulierModel.save(particulier);
+    return { message: 'Attribution Reussie, vous avez attribué '+equiPoint+' point(s)' };
+
   }
 
   async activateProgramme(id: number): Promise<{ message: string }> {

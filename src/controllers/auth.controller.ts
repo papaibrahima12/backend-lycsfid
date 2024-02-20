@@ -1,4 +1,11 @@
-import { Body, Controller, Post, Get, UseGuards, Param, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Get,
+  UseGuards,
+  Param
+} from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
 import { Verification } from 'src/entities/Verification.entity';
@@ -7,87 +14,176 @@ import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { AuthService } from 'src/services/auth.service';
 import { SendEmailService } from 'src/services/send-email.service';
 import { VerificationService } from 'src/services/verification.service';
-import { ApiTags, ApiOperation,ApiBody, ApiBearerAuth } from '@nestjs/swagger';
-import { Response } from 'express';
+import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 
 @ApiTags('Authentification for all users')
 @Controller('api/auth')
 export class AuthController {
-    constructor(private readonly userAuthService: AuthService,
-                private readonly emailService:SendEmailService,
-                private readonly verificationService: VerificationService) {}
+  constructor(
+    private readonly userAuthService: AuthService,
+    private readonly emailService: SendEmailService,
+    private readonly verificationService: VerificationService,
+  ) {}
 
   @Post('admin/register')
   @ApiOperation({ summary: 'Inscription Administrateur' })
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        email : {type:'string'},
-        adresse : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
-        password : {type: 'string'},
-        new_password : {type:'string'},
+        email: { type: 'string' },
+        adresse: {
+          type: 'enum',
+          enum: [
+            'Dakar',
+            'Thies',
+            'Diourbel',
+            'Fatick',
+            'Kaffrine',
+            'Kaolack',
+            'Kedougou',
+            'Kolda',
+            'Louga',
+            'Matam',
+            'Saint-Louis',
+            'Sedhiou',
+            'Tambacounda',
+            'Ziguinchor',
+          ],
+        },
+        password: { type: 'string' },
+        new_password: { type: 'string' },
       },
     },
     description: 'Inscription Administrateur',
   })
-  async registerAdmin(@Body() body: { email: string; adresse: string; password: string ;new_password:string}): Promise<{ message: string }> {
-    const { email,adresse, password, new_password } = body;
-    await this.userAuthService.registerAdmin(email,adresse,password,new_password);
+  async registerAdmin(
+    @Body()
+    body: {
+      email: string;
+      adresse: string;
+      password: string;
+      new_password: string;
+    },
+  ): Promise<{ message: string }> {
+    const { email, adresse, password, new_password } = body;
+    await this.userAuthService.registerAdmin(
+      email,
+      adresse,
+      password,
+      new_password,
+    );
     return { message: 'Insciption reussie' };
   }
 
   @Post('company/register')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        email : {type:'string'},
-        telephone : {type:'string'},
-        adresse : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
-        ninea : {type:'string'},
-        password : {type: 'string'},
-        new_password : {type:'string'},
+        email: { type: 'string' },
+        telephone: { type: 'string' },
+        adresse: {
+          type: 'enum',
+          enum: [
+            'Dakar',
+            'Thies',
+            'Diourbel',
+            'Fatick',
+            'Kaffrine',
+            'Kaolack',
+            'Kedougou',
+            'Kolda',
+            'Louga',
+            'Matam',
+            'Saint-Louis',
+            'Sedhiou',
+            'Tambacounda',
+            'Ziguinchor',
+          ],
+        },
+        ninea: { type: 'string' },
+        password: { type: 'string' },
+        new_password: { type: 'string' },
       },
     },
     description: 'Inscription Entreprise',
   })
-  async registerCompany(@Body() companyInfo: Entreprise): Promise<{ message: string }> {
-    await this.userAuthService.registerCompany(companyInfo.email, companyInfo.telephone,companyInfo.adresse, companyInfo.ninea, companyInfo.password,companyInfo.new_password);
-    return { message: 'Inscription reussie, vous recevrez un email dès que le compte sera activé !' };
+  async registerCompany(
+    @Body() companyInfo: Entreprise,
+  ): Promise<{ message: string }> {
+    await this.userAuthService.registerCompany(
+      companyInfo.email,
+      companyInfo.telephone,
+      companyInfo.adresse,
+      companyInfo.ninea,
+      companyInfo.password,
+      companyInfo.new_password,
+    );
+    return {
+      message:
+        'Inscription reussie, vous recevrez un email dès que le compte sera activé !',
+    };
   }
 
   @Post('particulier/register')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        telephone : {type:'string'},
-        birthDate : {type:'string', format: "date"},
-        adresse : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
-        password : {type: 'string'},
-        new_password : {type:'string'},
+        telephone: { type: 'string' },
+        birthDate: { type: 'string', format: 'date' },
+        adresse: {
+          type: 'enum',
+          enum: [
+            'Dakar',
+            'Thies',
+            'Diourbel',
+            'Fatick',
+            'Kaffrine',
+            'Kaolack',
+            'Kedougou',
+            'Kolda',
+            'Louga',
+            'Matam',
+            'Saint-Louis',
+            'Sedhiou',
+            'Tambacounda',
+            'Ziguinchor',
+          ],
+        },
+        password: { type: 'string' },
+        new_password: { type: 'string' },
       },
     },
     description: 'Inscription Client',
   })
-  async registerClient(@Body() clientInfo: Particulier): Promise<{ message: string }> {
-    await this.userAuthService.registerParticulier(clientInfo.telephone,clientInfo.birthDate, clientInfo.adresse, clientInfo.password,clientInfo.new_password);
+  async registerClient(
+    @Body() clientInfo: Particulier,
+  ): Promise<{ message: string }> {
+    await this.userAuthService.registerParticulier(
+      clientInfo.telephone,
+      clientInfo.birthDate,
+      clientInfo.adresse,
+      clientInfo.password,
+      clientInfo.new_password,
+    );
     return { message: 'Inscription reussie, Veuillez vous connecter !' };
   }
 
   @Post('admin/login')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        email : {type:'string'},
-        password : {type: 'string'},
+        email: { type: 'string' },
+        password: { type: 'string' },
       },
     },
     description: 'Connexion Admin',
   })
-  async loginAdmin(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
+  async loginAdmin(
+    @Body() body: { email: string; password: string },): Promise<any> {
     const { email, password } = body;
     const result = await this.userAuthService.loginAdmin(email, password);
     // res.cookie('token', result.token, {
@@ -97,21 +193,27 @@ export class AuthController {
     //     expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
     //   })
     //   .send({ message: 'Connexion Réussie', user:result.user  });
-      return { message: 'Connexion Réussie',token:result.token, user:result.user  };
+    return {
+      message: 'Connexion Réussie',
+      token: result.token,
+      user: result.user,
+    };
   }
 
   @Post('company/login')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        email : {type:'string'},
-        password : {type: 'string'},
+        email: { type: 'string' },
+        password: { type: 'string' },
       },
     },
     description: 'Connexion Entreprise',
   })
-  async loginCompany(@Body() body: { email: string; password: string },@Res({ passthrough: true }) res: Response): Promise<any> {
+  async loginCompany(
+    @Body() body: { email: string; password: string },
+  ): Promise<any> {
     const { email, password } = body;
     const result = await this.userAuthService.loginCompany(email, password);
     // res.cookie('token', result.token, {
@@ -121,28 +223,41 @@ export class AuthController {
     //     expires: new Date(Date.now() + 1 * 100 * 100 * 1000),
     //   })
     //   .send({ message: 'Connexion Réussie', user:result.user  });
-    return { message: 'Connexion Réussie',token:result.token, user:result.user  };
+    return {
+      message: 'Connexion Réussie',
+      token: result.token,
+      user: result.user,
+    };
   }
 
   @Post('particulier/login')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        telephone : {type:'string'},
-        password : {type: 'string'},
+        telephone: { type: 'string' },
+        password: { type: 'string' },
       },
     },
     description: 'Connexion Client',
   })
-  async loginParticulier(@Body() body: { telephone: string; password: string }): Promise<{ message: string; token: string; user: Particulier }> {
+  async loginParticulier(
+    @Body() body: { telephone: string; password: string },
+  ): Promise<{ message: string; token: string; user: Particulier }> {
     const { telephone, password } = body;
-    const result = await this.userAuthService.loginParticulier(telephone, password);
-    return { message: 'Connexion Réussie', token:result.token, user:result.user };
+    const result = await this.userAuthService.loginParticulier(
+      telephone,
+      password,
+    );
+    return {
+      message: 'Connexion Réussie',
+      token: result.token,
+      user: result.user,
+    };
   }
 
   @UseGuards(AuthGuard)
-  @ApiBearerAuth() 
+  @ApiBearerAuth()
   @Get('admin/verifyCompany/:token')
   async verifyCompanyAccount(@Param('id') id: number) {
     const result = await this.verificationService.verifyCompanyAccount(id);
@@ -151,17 +266,17 @@ export class AuthController {
 
   @Post('admin/reVerifyCompany/')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        email : {type:'string'},
+        email: { type: 'string' },
       },
     },
     description: 'Reverification Entreprise',
   })
   @UseGuards(AuthGuard)
-  @ApiBearerAuth() 
-  async reVerifyCompanyAccount(@Body() body :{email: string}) {
+  @ApiBearerAuth()
+  async reVerifyCompanyAccount(@Body() body: { email: string }) {
     const { email } = body;
     const result = await this.verificationService.reVerifyCompanyAccount(email);
     return result;
@@ -169,15 +284,17 @@ export class AuthController {
 
   @Post('company/resetPassword')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        email : {type:'string'},
+        email: { type: 'string' },
       },
     },
     description: 'Reinitialisation Mot de passe',
   })
-  async sendResetPasswordEmail(@Body() body: { email: string }): Promise<{ message: string }> {
+  async sendResetPasswordEmail(
+    @Body() body: { email: string },
+  ): Promise<{ message: string }> {
     const { email } = body;
     await this.emailService.sendResetPasswordEmail(email);
     return { message: 'Un email vous a été envoyé avec succès !' };
@@ -185,22 +302,33 @@ export class AuthController {
 
   @Post('company/password/reset')
   @ApiBody({
-    schema:{
+    schema: {
       type: 'object',
       properties: {
-        verificationCode : {type:'string'},
-        new_password : {type: 'string'},
-        new_password_conf : {type: 'string'},
+        verificationCode: { type: 'string' },
+        new_password: { type: 'string' },
+        new_password_conf: { type: 'string' },
       },
     },
-    description:'Changement du mot de passe',
+    description: 'Changement du mot de passe',
   })
-  async changePassword(@Body() body: { verificationCode: string, new_password:string,new_password_conf:string }): Promise<{ message: string }> {
-    const { verificationCode, new_password,new_password_conf } = body;
-    await this.userAuthService.changePasswordCompany(verificationCode,new_password,new_password_conf);
+  async changePassword(
+    @Body()
+    body: {
+      verificationCode: string;
+      new_password: string;
+      new_password_conf: string;
+    },
+  ): Promise<{ message: string }> {
+    const { verificationCode, new_password, new_password_conf } = body;
+    await this.userAuthService.changePasswordCompany(
+      verificationCode,
+      new_password,
+      new_password_conf,
+    );
     return { message: 'Mot de passe changé avec succès !' };
   }
-  
+
   @Get('users')
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -222,10 +350,9 @@ export class AuthController {
     return this.userAuthService.getEntreprises();
   }
 
-
   @Get('admin/verifications')
   @UseGuards(AuthGuard)
-  @ApiBearerAuth() 
+  @ApiBearerAuth()
   async getVerifications(): Promise<Verification[]> {
     return this.userAuthService.getVerifications();
   }
@@ -239,7 +366,7 @@ export class AuthController {
 
   // @Get('company/logout')
   // @UseGuards(CompanyGuard)
-  // @ApiBearerAuth() 
+  // @ApiBearerAuth()
   // async logoutCompany(@Req() req : Request,@Res() res:Response): Promise<any> {
   //   req.session.destroy(() => {
   //    return res.status(200).clearCookie('token', {path:'/'}).json({message:'Logout Successfull'});

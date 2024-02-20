@@ -1,7 +1,13 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum } from "class-validator";
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Entreprise } from "./Entreprise.entity";
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEnum } from 'class-validator';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Entreprise } from './Entreprise.entity';
 
 @Entity()
 export class Program {
@@ -12,16 +18,28 @@ export class Program {
   @ApiProperty({ required: true })
   nomProgram: string;
 
-  @IsEnum(['palier achat', 'seuil achat'], { message: 'Veuillez selectionner un systeme de points valide' })
-  @Column({ type: 'enum', enum: ['palier achat', 'seuil achat'], nullable: false })
+  @IsEnum(['palier achat', 'seuil achat'], {
+    message: 'Veuillez selectionner un systeme de points valide',
+  })
+  @Column({
+    type: 'enum',
+    enum: ['palier achat', 'seuil achat'],
+    nullable: false,
+  })
   @ApiProperty({ required: true })
-  systemePoint: string;
+   systemePoint: string;
 
   @Column({ type: 'int', nullable: true })
-  montant: number;
+  montantAttribution: number;
 
   @Column({ type: 'int', nullable: true })
-  nombrePoints: number;
+  nombrePointsAttribution: number;
+
+  @Column({ type: 'int', nullable: true })
+  montantRedemption: number;
+
+  @Column({ type: 'int', nullable: true })
+  nombrePointsRedemption: number;
 
   @Column({ default: true })
   isActive: boolean;

@@ -45,6 +45,9 @@ export class Particulier {
   @Column({type:'varchar', length:255, nullable:false})
   new_password: string;
 
+  @Column({ type: 'int', nullable: true, default:0 })
+  soldePoint: number;
+
   @Column({ default: false })
   verified: boolean;
 
