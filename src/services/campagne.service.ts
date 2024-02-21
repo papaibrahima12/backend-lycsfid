@@ -51,7 +51,6 @@ export class CampagneService {
 
   async startCampagne(id: number): Promise<{ message: string }> {
         const existingCampagne = await this.campagneModel.findOne({where:{id:id}});
-        const today = Date.now();
         if (!existingCampagne) {
             throw new HttpException({
             status: HttpStatus.NOT_FOUND,

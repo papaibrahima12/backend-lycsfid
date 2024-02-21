@@ -67,6 +67,12 @@ export class CampagneController {
         return this.campagneService.updateCampagne(id,campagneData,file);
     }
 
+    @Get('company/campagne/start/:id')
+    @UseInterceptors(FileInterceptor('image'))
+    async startCampagne(@Param('id') id: number): Promise<any> {
+        return this.campagneService.startCampagne(id);
+    }
+
     @Delete('company/campagne/delete/:id')
     @UseInterceptors(FileInterceptor('image'))
     async deleteCampagne(
