@@ -12,8 +12,7 @@ export class ParticulierService {
     constructor(@InjectRepository(Bon) private bonModel: Repository<Bon>,
                 @InjectRepository(Campagne) private campagneModel: Repository<Campagne>,
                 @InjectRepository(Program) private programModel: Repository<Program>,
-                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>
-    ){}
+                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>){}
 
      async getBons(): Promise<Bon[]> {
       try {
@@ -44,5 +43,15 @@ export class ParticulierService {
         throw new Error('Erreur lors de la recuperation des programmes !');
       }
   }
+
+  async getEntreprises(): Promise<Entreprise[]> {
+    try {
+      const entreprises = await this.entrepriseModel.find({});
+      return entreprises;
+    } catch (error) {
+      this.logger.error(`Erreur lors de la recuperation des entreprises !: ${error.message}`);
+      throw new Error('Erreur lors de la recuperation des entreprises !');
+    }
+}
 
 }

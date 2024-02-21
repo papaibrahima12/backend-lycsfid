@@ -121,13 +121,20 @@ async deleteBon(id: number): Promise<{ message: string }> {
      async getBons(userId:number): Promise<Bon[]> {
       try {
         const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
+        if (!entreprise) {
+          throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            error: 'Entreprise non trouvée',
+          }, HttpStatus.NOT_FOUND);
+        } 
         const bons = await this.bonModel.find({where:{entreprise:entreprise}});
-         const currentDate = new Date();
+        const currentDate = new Date();
         const expiredBons = await this.bonModel.find({
           where: { dateFin: currentDate, entreprise:entreprise },
         });
-        for (const bon of expiredBons) {
+        for (var bon of expiredBons) {
           bon.isActive = false;
+          bon.status = 'cloturé';
           await this.bonModel.save(bon);
         }
         return bons;
@@ -142,6 +149,7 @@ async deleteBon(id: number): Promise<{ message: string }> {
         const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
         const bon = await this.bonModel.findOne({where:{id: id, entreprise:entreprise}});
         bon.isActive = true;
+        bon.status = 'consommé';
         await this.bonModel.save(bon);
         return {message: "Bon activé avec succès"};
       } catch (error) {

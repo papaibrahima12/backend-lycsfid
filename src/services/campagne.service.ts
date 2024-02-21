@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import * as AWS from 'aws-sdk';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { LessThanOrEqual, Repository } from 'typeorm';
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 
@@ -138,8 +138,17 @@ export class CampagneService {
               status: HttpStatus.NOT_FOUND,
               error: 'Entreprise non trouvée',
             }, HttpStatus.NOT_FOUND);
-    } 
+          }
       const campagnes = await this.campagneModel.find({where:{entreprise:entreprise}});
+      const currentDate = new Date();
+      const expiredCampagnes = await this.campagneModel.find({
+        where: { dateFin : LessThanOrEqual(currentDate), entreprise:entreprise },
+      });
+      for (var campagne of expiredCampagnes) {
+        campagne.isActive = false;
+        campagne.status = 'cloturé';
+        await this.campagneModel.save(campagne);
+      }
       return campagnes;
     } catch (error) {
       this.logger.error(`An error occurred while retrieving campagnes: ${error.message}`);

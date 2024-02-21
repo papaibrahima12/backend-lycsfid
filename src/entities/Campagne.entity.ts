@@ -27,10 +27,20 @@ export class Campagne{
   @ApiProperty()
   dateFin: Date;
 
-  @IsEnum(['10-20ans','20-30ans','30-50ans','50-60ans','60-plus'],{message: "Veuillez selectionner une tranche d'age valide"})
-  @Column({type:'enum', enum:['10-20ans','20-30ans','30-50ans','50-60ans','60-plus']})
+  // @IsEnum(['10-20ans','20-30ans','30-50ans','50-60ans','60-plus'],{message: "Veuillez selectionner une tranche d'age valide"})
+  // @Column({type:'enum', enum:['10-20ans','20-30ans','30-50ans','50-60ans','60-plus']})
+  // @ApiProperty()
+  // ageCible:string;
+
+  @IsNotEmpty({message: "Specifiez l'age cible minimal requis !"})
+  @Column({type:'int', nullable:true})
   @ApiProperty()
-  ageCible:string;
+  ageCibleMin: number;
+
+  @IsNotEmpty({message: "Specifiez l'age cible maximal requis !"})
+  @Column({type:'int', nullable:true})
+  @ApiProperty()
+  ageCibleMax: number;
 
   @IsEnum(['Masculin', 'Feminin'],{message: 'Veuillez selectionner une sexe valide' })
   @Column({type:'enum', enum:['Masculin','Feminin']})
@@ -56,7 +66,7 @@ export class Campagne{
   @ApiProperty()
   image: string;
 
-  @Column({default:false})
+  @Column({default:true})
   isActive:boolean;
 
   @Column({type:'enum',enum:['non-démarré','en cours','cloturé'], default:'non-démarré'})

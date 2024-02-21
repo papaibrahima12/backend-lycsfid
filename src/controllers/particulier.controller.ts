@@ -2,13 +2,14 @@ import { Controller, Get, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Bon } from 'src/entities/Bon.entity';
 import { Campagne } from 'src/entities/Campagne.entity';
+import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Program } from 'src/entities/Program.entity';
 import { ParticulierGuard } from 'src/guards/particulier.guard';
 import { ParticulierService } from 'src/services/particulier.service';
 
 
 @Controller('api/v1')
-@ApiTags('Particuliers')
+@ApiTags('Particuliers Services')
 @UseGuards(ParticulierGuard)
 export class ParticulierController {
       constructor(private particulierService: ParticulierService) {}
@@ -50,6 +51,18 @@ export class ParticulierController {
     const today = new Date();
     today.getDate();
     return this.particulierService.getPrograms();
+  }
+
+  @Get('particulier/companies/all')
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: "Limite d'éléments par page",
+    required: false,
+  })
+  async getEntreprises(): Promise<Entreprise[]> {
+    return this.particulierService.getEntreprises();
   }
 
 
