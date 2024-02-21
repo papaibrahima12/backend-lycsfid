@@ -109,7 +109,7 @@ export class AuthService {
       if (!passwordMatch) {
         throw new UnauthorizedException('Mot de passe incorrect');
       }
-      const payload = { userId: user.id, user:user, role: user.role };
+      const payload = { userId: user.id, role: user.role };
       const token = this.jwtService.sign(payload); 
       return {token,user};
   }
@@ -129,7 +129,7 @@ export class AuthService {
       if (user.verified == false){
           throw new UnauthorizedException("Votre compte n'est pas encore activé !");
       }
-      const payload = { userId: user.id, user:user, role:user.role };
+      const payload = { userId: user.id, role:user.role };
       const token = this.jwtService.sign(payload);
       return {token,user};
   }

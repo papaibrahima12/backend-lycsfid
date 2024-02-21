@@ -41,7 +41,7 @@ export class Program {
   @Column({ type: 'int', nullable: true })
   nombrePointsRedemption: number;
 
-  @Column({ default: true })
+  @Column({ default: false })
   isActive: boolean;
 
   @ManyToOne(() => Entreprise, { nullable: false })

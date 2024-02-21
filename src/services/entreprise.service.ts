@@ -161,6 +161,12 @@ export class EntrepriseService {
             error: 'Programme introuvable',
             }, HttpStatus.NOT_FOUND);
         }
+        if(existingProgram.isActive == true) {
+          throw new HttpException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            error: 'Programme déja activé !',
+            }, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
         existingProgram.isActive = true;
         await this.programModel.save(existingProgram);
         return { message: 'Programme activé avec succès !' };
@@ -174,6 +180,12 @@ export class EntrepriseService {
             status: HttpStatus.NOT_FOUND,
             error: 'Programme introuvable',
             }, HttpStatus.NOT_FOUND);
+        }
+        if(existingProgram.isActive == false) {
+          throw new HttpException({
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            error: 'Programme déja désactivé !',
+            }, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         existingProgram.isActive = false;
         await this.programModel.save(existingProgram);

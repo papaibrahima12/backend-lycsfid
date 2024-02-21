@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as AWS from 'aws-sdk';
 import { Bon } from 'src/entities/Bon.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
-import {  Repository } from 'typeorm';
+import {  LessThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
 export class BonService {
@@ -130,8 +130,9 @@ async deleteBon(id: number): Promise<{ message: string }> {
         const bons = await this.bonModel.find({where:{entreprise:entreprise}});
         const currentDate = new Date();
         const expiredBons = await this.bonModel.find({
-          where: { dateFin: currentDate, entreprise:entreprise },
+          where: { dateFin: LessThanOrEqual(currentDate), entreprise:entreprise },
         });
+        console.log('bons expirés: ',expiredBons);
         for (var bon of expiredBons) {
           bon.isActive = false;
           bon.status = 'cloturé';

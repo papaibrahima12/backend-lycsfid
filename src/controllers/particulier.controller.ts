@@ -65,8 +65,4 @@ export class ParticulierController {
     return this.particulierService.getEntreprises();
   }
 
-
-
-
-
 }
