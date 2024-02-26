@@ -4,7 +4,10 @@ import {
   Post,
   Get,
   UseGuards,
-  Param
+  Param,
+  Request,
+  UploadedFile,
+  UseInterceptors
 } from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
@@ -14,7 +17,9 @@ import { AuthGuard } from 'src/guards/auth/auth.guard';
 import { AuthService } from 'src/services/auth.service';
 import { SendEmailService } from 'src/services/send-email.service';
 import { VerificationService } from 'src/services/verification.service';
-import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBody, ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CompanyGuard } from 'src/guards/company.guard';
 
 @ApiTags('Authentification for all users')
 @Controller('api/auth')
@@ -230,6 +235,52 @@ export class AuthController {
     };
   }
 
+  @Post('company/profile/change')
+  @UseInterceptors(FileInterceptor('imageProfil'))
+  @ApiConsumes('multipart/form-data')
+  @UseGuards(CompanyGuard)
+  @ApiBearerAuth() 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: { 
+        prenom: { type: 'string' },
+        nom: { type: 'string' },
+        telephone: { type: 'string' },
+        adresse: {
+          type: 'enum',
+          enum: [
+            'Dakar',
+            'Thies',
+            'Diourbel',
+            'Fatick',
+            'Kaffrine',
+            'Kaolack',
+            'Kedougou',
+            'Kolda',
+            'Louga',
+            'Matam',
+            'Saint-Louis',
+            'Sedhiou',
+            'Tambacounda',
+            'Ziguinchor',
+          ],
+        },
+        sousGroupe: { type: 'string' },
+        imageProfil: {
+          type: 'string',
+          format: 'binary',
+        }
+      },
+    },
+    description: 'Changement de profil',
+  })
+  async changeProfilEntreprise(@Body() companyInfo: {prenom:string, nom:string, telephone: string, sousGroupe:string,adresse: string}, @UploadedFile() file: Express.Multer.File, @Request() request: { user: { userId: number }}): Promise<{ message: string }> {
+    const userId = request['user'].userId;
+    await this.userAuthService.changeProfileCompany(userId, companyInfo.prenom, companyInfo.nom, companyInfo.telephone, companyInfo.sousGroupe, companyInfo.adresse, file);
+    return { message: 'Modification Profil réussie ! '};
+  } 
+
   @Post('particulier/login')
   @ApiBody({
     schema: {
@@ -327,6 +378,14 @@ export class AuthController {
       new_password_conf,
     );
     return { message: 'Mot de passe changé avec succès !' };
+  }
+
+  @Get('company/profile')
+  @UseGuards(CompanyGuard)
+  @ApiBearerAuth()
+  async getProfileCompany(@Request() request: { user: { userId: number }}): Promise<Entreprise> {
+    const userId = request['user'].userId;
+    return this.userAuthService.getProfilCompany(userId);
   }
 
   @Get('users')

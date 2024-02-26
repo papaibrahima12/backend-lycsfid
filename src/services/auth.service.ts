@@ -8,10 +8,13 @@ import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Verification } from 'src/entities/Verification.entity';
 import { SendEmailService } from './send-email.service';
+import { Expression } from 'mongoose';
+import * as AWS from 'aws-sdk';
 
 @Injectable()
 export class AuthService {
      private readonly logger = new Logger(AuthService.name);
+
   constructor(@InjectRepository(User) private userRepository: Repository<User>,
                @InjectRepository(Entreprise) private entrepriseRepository: Repository<Entreprise>,
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
@@ -188,7 +191,44 @@ export class AuthService {
       return { message: "Mot de passe modifié avec succès!"};
   }
 
-  async changePasswordParticulier(){}
+  async changeProfileCompany(id: number, prenom:string, nom:string, telephone: string, sousGroupe:string,adresse: string, file?: Express.Multer.File){
+    const existEntreprise = await this.entrepriseRepository.findOne({where: {id: id}});
+    if (!existEntreprise) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Cet entreprise n'existe pas",
+      }, HttpStatus.NOT_FOUND)
+    }
+
+    if (file) {
+      console.log(file);
+      const uploadedImage = await this.upload(file);
+      existEntreprise.imageProfil = uploadedImage;
+      existEntreprise.prenom = prenom;
+      existEntreprise.nom = nom;
+      existEntreprise.telephone = telephone;
+      existEntreprise.adresse = adresse;
+      existEntreprise.sousGroupe = sousGroupe;
+    await this.entrepriseRepository.save(existEntreprise);
+    return {message: 'Profil modifié avec succès !'};
+  }else{
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'Vous devez charger une image',
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+    }
+
+  }
+
+  async getProfilCompany(id: number): Promise<Entreprise> {
+    try {
+      const entreprise = await this.entrepriseRepository.findOne({where:{id:id}});
+      return entreprise;
+    } catch (error) {
+      this.logger.error(`Erreur lors du chargement des entreprises: ${error.message}`);
+      throw new Error('Erreur lors du chargement des entreprises');
+    }
+  }
 
   async getUsers(): Promise<User[]> {
     try {
@@ -245,5 +285,48 @@ export class AuthService {
     const emailPartenaire = email.toLowerCase();
     const user = await this.entrepriseRepository.findOne({ where:{ email: emailPartenaire} });
     return user;
+  }
+
+  async getProfilPartner(id:number): Promise<Particulier>{
+    try {
+      const particulier = await this.particulierRepository.findOne({where:{id: id}});
+      return particulier;
+    } catch (error) {
+      this.logger.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
+    }
+  }
+
+  async upload(file): Promise<string> {
+    const { originalname } = file;
+    const bucketS3 = 'lycsalliofiles';
+    return this.uploadS3(file.buffer, bucketS3, originalname);
+}
+
+  async uploadS3(file,bucket, name): Promise<string> {
+    const s3 = this.getS3();
+    const params = {
+        Bucket: bucket,
+        Key: String(name),
+        acl: 'private',
+        Body: file,
+    };
+    console.log(params);
+    return new Promise((resolve, reject) => {
+        s3.upload(params, (err, data) => {
+        if (err) {
+            Logger.error(err);
+            reject(err.message);
+        }
+        resolve(data.Location);
+        });
+    });
+}
+
+  getS3() {
+    return new AWS.S3({
+        accessKeyId: process.env.accessKEY,
+        secretAccessKey: process.env.secretAccessKey,
+    });
   }
 }

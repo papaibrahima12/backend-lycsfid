@@ -46,7 +46,7 @@ export class Entreprise {
   @MaxLength(10,{message:"Revoyez le nombre de caracteres svp, le ninea doit etre de 10 caracteres"})
   @MinLength(10,{message:"Revoyez le nombre de caracteres svp, le ninea doit etre de 10 caracteres"})
   @Column({type:'varchar', length:255, nullable:false})
-  @ApiProperty({required:true})
+  @ApiProperty({required:false})
   ninea:string;
 
   @Column({type:'varchar', length:255, nullable:true})
@@ -57,6 +57,9 @@ export class Entreprise {
 
   @Column({type:'varchar', length:255, nullable:true})
   contactRef:string;
+
+  @Column({type:'varchar', length:255, nullable:true})
+  imageProfil:string;
 
   @IsNotEmpty({message: "Le mot de passe est requis !"})
   @MinLength(8,{message:"Revoyez le nombre de caracteres svp, le mot de passe doit etre au minimum 8 caracteres"})
