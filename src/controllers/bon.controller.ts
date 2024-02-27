@@ -75,7 +75,24 @@ export class BonController {
   @Put('company/bon/update/:id')
   @UseInterceptors(FileInterceptor('image'))
   @ApiConsumes('multipart/form-data')
-  @ApiBody({ type: Bon, description: 'Données pour mettre à jour un bon' })
+  @ApiBody({schema:{ type: 'object',
+      properties: {
+        nomBon: { type: 'string', nullable:false },
+        dateDebut: { type: 'string',  format:'date' },
+        dateFin: { type: 'string', format:'date' },
+        typeBon: { type: 'string' },
+        typeReduction: { type: 'string' },
+        codeReduction: { type: 'string' },
+        reduction: { type: 'string' },
+        ageCibleMin: { type: 'integer', nullable:true },
+        ageCibleMax: { type: 'integer', nullable:true },
+        sexeCible : {type:'enum', enum:['Masculin','Feminin']},
+        localisation : {type:'enum', enum:['Dakar','Thies','Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']},
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },description: 'Mettre à jour un bon' }})
   @ApiParam({ name: 'id', description: 'ID du bon à mettre à jour' })
   async updateBon(
     @Param('id') id: number,

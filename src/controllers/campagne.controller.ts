@@ -22,7 +22,8 @@ export class CampagneController {
         codePromo: { type: 'string' },
         dateDebut: { type: 'string',  format:'date' },
         dateFin: { type: 'string', format:'date' },
-        ageCible : {type:'enum',  enum:['10-20ans','20-30ans','30-50ans','50-60ans','60-plus']},
+        ageCibleMin: { type: 'integer', nullable:true },
+        ageCibleMax: { type: 'integer', nullable:true },
         sexeCible : {type:'enum', enum:['Masculin','Feminin']},
         typeDeCible: { type: 'enum', enum: ['Regions'] },
         localisation: {
