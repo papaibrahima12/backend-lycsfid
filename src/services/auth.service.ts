@@ -11,6 +11,7 @@ import { SendEmailService } from './send-email.service';
 import { Expression } from 'mongoose';
 import * as AWS from 'aws-sdk';
 import { Caissier } from 'src/entities/Caissier.entity';
+import { SendMessageServiceService } from './sendmessageservice.service';
 
 @Injectable()
 export class AuthService {
@@ -21,7 +22,7 @@ export class AuthService {
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
                @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
                @InjectRepository(Caissier) private readonly caissierRepository: Repository<Caissier>,
-              private jwtService: JwtService, private sendEmailService:SendEmailService) {}
+              private jwtService: JwtService, private sendEmailService:SendEmailService, private sendMessService: SendMessageServiceService) {}
  
   async registerAdmin(email: string, adresse:string, password: string, new_password:string): Promise<{ message: string }> {
      const user = await this.userRepository.findOne({ where:{ email: email }});
@@ -357,5 +358,19 @@ export class AuthService {
         accessKeyId: process.env.accessKEY,
         secretAccessKey: process.env.secretAccessKey,
     });
+  }
+
+  async generateRandomCode(length: number){
+    let result = "";
+    let characters ="0123456789";
+    let charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
