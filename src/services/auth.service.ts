@@ -10,6 +10,7 @@ import { Verification } from 'src/entities/Verification.entity';
 import { SendEmailService } from './send-email.service';
 import { Expression } from 'mongoose';
 import * as AWS from 'aws-sdk';
+import { Caissier } from 'src/entities/Caissier.entity';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
                @InjectRepository(Entreprise) private entrepriseRepository: Repository<Entreprise>,
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
                @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
+               @InjectRepository(Caissier) private readonly caissierRepository: Repository<Caissier>,
               private jwtService: JwtService, private sendEmailService:SendEmailService) {}
  
   async registerAdmin(email: string, adresse:string, password: string, new_password:string): Promise<{ message: string }> {
@@ -166,6 +168,23 @@ export class AuthService {
       return {token,user};
   }
 
+  async loginCaissier(telephone: string, password: string): Promise<{ token: string; caissier: Caissier }> {
+    const caissier = await this.caissierRepository.findOne({ where:{telephone: telephone} });
+    if (!caissier) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Compte inexistant, veuillez vous inscrire svp !",
+      }, HttpStatus.NOT_FOUND)
+    }
+    const passwordMatch = await bcrypt.compare(password, caissier.password);
+    if (!passwordMatch) {
+      throw new UnauthorizedException('Mot de passe incorrect');
+    }
+    const payload = { caissierId: caissier.id, role:caissier.role };
+    const token = this.jwtService.sign(payload); 
+    return {token,caissier};
+}
+
   async changePasswordCompany(verificationCode:string, new_password:string, new_password_conf: string):Promise<{ message: string}>{
     const company= await this.entrepriseRepository.findOne({ where:{verificationCode:verificationCode }});
       if (!company) {
@@ -237,6 +256,16 @@ export class AuthService {
     } catch (error) {
       this.logger.error(`Erreur lors du chargement des utilisateurs: ${error.message}`);
       throw new Error('Erreur lors du chargement des utilisateurs');
+    }
+  }
+
+  async getCaissiers(): Promise<Caissier[]> {
+    try {
+      const caissiers = await this.caissierRepository.find({});
+      return caissiers;
+    } catch (error) {
+      this.logger.error(`Erreur lors du chargement des caissiers: ${error.message}`);
+      throw new Error('Erreur lors du chargement des caissiers');
     }
   }
 

@@ -44,6 +44,10 @@ export class Program {
   @Column({ default: false })
   isActive: boolean;
 
+  @Column({type:'timestamptz',nullable:true})
+  @ApiProperty({required:false})
+  dateActivation: Date;
+
   @ManyToOne(() => Entreprise, { nullable: false })
   @JoinColumn({ name: 'entrepriseId' })
   entreprise: Entreprise;

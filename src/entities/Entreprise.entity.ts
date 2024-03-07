@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches, MaxLength, MinLength } from "class-validator";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { PointParEntreprise } from "./PointParEntreprise.entity";
 
 @Entity()
 export class Entreprise {
@@ -72,6 +73,9 @@ export class Entreprise {
   @Column({type:'varchar', length:255, nullable:false})
   @ApiProperty({required:true})
   new_password: string;
+
+  @OneToMany(() => PointParEntreprise, (point) => point.entreprise)
+  points: PointParEntreprise[];
 
   @Column({type:'text', nullable:true})
   token: string;

@@ -26,6 +26,8 @@ import {
 } from '@nestjs/swagger';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CompanyGuard } from 'src/guards/company.guard';
+import { Caissier } from 'src/entities/Caissier.entity';
+import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
 
 @ApiTags('Authentication for all users')
 @Controller('api/auth')
@@ -34,6 +36,7 @@ export class AuthController {
     private readonly userAuthService: AuthService,
     private readonly emailService: SendEmailService,
     private readonly verificationService: VerificationService,
+    private readonly sendSMSService: SendMessageServiceService,
   ) {}
 
   @Post('admin/register')
@@ -333,6 +336,32 @@ export class AuthController {
     };
   }
 
+  @Post('agent/login')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        telephone: { type: 'string' },
+        password: { type: 'string' },
+      },
+    },
+    description: 'Connexion Client',
+  })
+  async loginCaissier(
+    @Body() body: { telephone: string; password: string },
+  ): Promise<{ message: string; token: string; caissier: Caissier }> {
+    const { telephone, password } = body;
+    const result = await this.userAuthService.loginCaissier(
+      telephone,
+      password,
+    );
+    return {
+      message: 'Connexion Réussie',
+      token: result.token,
+      caissier: result.caissier,
+    };
+  }
+
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   @Get('admin/verifyCompany/:token')
@@ -359,7 +388,25 @@ export class AuthController {
     return result;
   }
 
+  @Post('admin/generateToken/')
+  @ApiBody({
+    
+    schema: {
+      type: 'object',
+      properties: {
+        grant_type: { type: 'string', default: 'client_credentials' },
+      },
+    },
+    description: 'Generation de token',
+  })
+  async generateToken(@Body() body: { grant_type: string }) {
+    const { grant_type } = body;
+    const result = await this.sendSMSService.generateToken('client_credentials');
+    return result;
+  }
+
   @Post('company/resetPassword')
+  @ApiConsumes('application/x-www-form-urlencoded') // Ajoutez cette ligne pour spécifier le type de contenu
   @ApiBody({
     schema: {
       type: 'object',
@@ -428,6 +475,13 @@ export class AuthController {
   @ApiBearerAuth()
   async getParticuliers(): Promise<Particulier[]> {
     return this.userAuthService.getClients();
+  }
+
+  @Get('agents')
+  @UseGuards(CompanyGuard)
+  @ApiBearerAuth()
+  async getCaissiers(): Promise<Caissier[]> {
+    return this.userAuthService.getCaissiers();
   }
 
   @Get('companies')

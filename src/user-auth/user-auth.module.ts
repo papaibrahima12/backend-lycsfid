@@ -14,6 +14,8 @@ import { User } from 'src/entities/User.entity';
 import { Session } from 'src/guards/auth/session.serializer';
 import { PassportModule } from '@nestjs/passport';
 import { Bon } from 'src/entities/Bon.entity';
+import { Caissier } from 'src/entities/Caissier.entity';
+import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
 
 @Module({
   imports: [
@@ -23,6 +25,7 @@ import { Bon } from 'src/entities/Bon.entity';
       Entreprise,
       Particulier,
       Bon,
+      Caissier,
       Campagne,
       Verification,
     ]),
@@ -32,6 +35,6 @@ import { Bon } from 'src/entities/Bon.entity';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, VerificationService, Session, SendEmailService],
+  providers: [AuthService, VerificationService,SendMessageServiceService, Session, SendEmailService],
 })
 export class UserAuthModule {}

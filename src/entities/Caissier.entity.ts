@@ -1,9 +1,9 @@
 import { IsEnum, IsNotEmpty, MaxLength, MinLength } from "class-validator";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { PointParEntreprise } from "./PointParEntreprise.entity";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Entreprise } from "./Entreprise.entity";
 
 @Entity()
-export class Particulier {
+export class Caissier {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -18,9 +18,6 @@ export class Particulier {
   @Column({type:'varchar', length:40, nullable:true, unique:true})
   email: string;
 
-  @IsNotEmpty({ message: 'La date de naissance ne doit pas être vide et au format YYYY-MM-DD' })
-  @Column({type:'date', nullable:false, unique:false})
-  birthDate: Date;
 
   @IsNotEmpty({message: "L'adresse ne doit pas etre vide !"})
   @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
@@ -29,11 +26,11 @@ export class Particulier {
 
   @IsNotEmpty({message: "Le numero de téléphone est requis !"})
   @MinLength(9,{message:"le numero de telephone doit etre au moins 9 chiffres"})
-  @MaxLength(12, {message:"le numero de telephone ne doit pas depasser 12 chiffres"})
+  @MaxLength(13, {message:"le numero de telephone ne doit pas depasser 12 chiffres"})
   @Column({type:'varchar', length:255, nullable:false})
   telephone: string;
 
-  @Column({type:'varchar',default:'client'})
+  @Column({type:'varchar',default:'caissier'})
   role: string;
 
   @IsNotEmpty({message: "Le mot de passe est requis !"})
@@ -46,8 +43,9 @@ export class Particulier {
   @Column({type:'varchar', length:255, nullable:false})
   new_password: string;
 
-  @OneToMany(() => PointParEntreprise, (point) => point.client)
-  soldePoints: PointParEntreprise[];
+  @ManyToOne(() => Entreprise, { nullable: false })
+  @JoinColumn({ name: 'entrepriseId' })
+  entreprise: Entreprise;
 
   @Column({ default: false })
   verified: boolean;
@@ -57,4 +55,7 @@ export class Particulier {
 
   @Column({ type: 'date', default: null })
   verifiedAt: Date;
+
+  @Column({ type: 'date', default: null })
+  createdAt: Date;
 }

@@ -1,3 +1,4 @@
+import { SendMessageServiceService } from './services/sendmessageservice.service';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -12,7 +13,7 @@ import { EntrepriseModule } from './modules/entreprise.module';
 
 @Module({
   imports: [
-     ConfigModule.forRoot({
+    ConfigModule.forRoot({
       envFilePath: '.env',
       isGlobal: true,
     }),
@@ -35,6 +36,6 @@ import { EntrepriseModule } from './modules/entreprise.module';
     EntrepriseModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [SendMessageServiceService, AppService],
 })
-export class AppModule {}
+export class AppModule { }

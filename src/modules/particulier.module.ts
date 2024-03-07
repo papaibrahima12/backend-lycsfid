@@ -8,10 +8,11 @@ import { Campagne } from 'src/entities/Campagne.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { ParticulierService } from 'src/services/particulier.service';
+import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 
 @Module({
     imports: [
-    TypeOrmModule.forFeature([Entreprise, Particulier, Bon, Program, Campagne]),
+    TypeOrmModule.forFeature([Entreprise, Particulier, Bon, Program, Campagne, PointParEntreprise]),
   ],
   controllers: [ParticulierController],
   providers: [ParticulierService, JwtService],

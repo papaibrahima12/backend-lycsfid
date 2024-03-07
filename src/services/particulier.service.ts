@@ -1,8 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Bon } from 'src/entities/Bon.entity';
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { Particulier } from 'src/entities/Particulier.entity';
+import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Program } from 'src/entities/Program.entity';
 import { Repository } from 'typeorm';
 
@@ -12,8 +14,11 @@ export class ParticulierService {
     constructor(@InjectRepository(Bon) private bonModel: Repository<Bon>,
                 @InjectRepository(Campagne) private campagneModel: Repository<Campagne>,
                 @InjectRepository(Program) private programModel: Repository<Program>,
-                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>){}
-
+                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
+                @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                @InjectRepository(PointParEntreprise) private pointModel: Repository<PointParEntreprise>,      
+                ){}
+      
      async getBons(): Promise<Bon[]> {
       try {
         const bons = await this.bonModel.find({where:{ isActive: true }});
@@ -54,4 +59,23 @@ export class ParticulierService {
     }
 }
 
+async getPoints(clientId: number): Promise<PointParEntreprise[]> {
+  try {
+    const client = await this.particulierModel.findOne({ where: { id: clientId } });
+    if (!client) {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Particulier non trouvé !',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    const points = await this.pointModel.find({ where: { client } });
+    return points;
+  } catch (error) {
+    this.logger.error(`Erreur lors de la récupération du solde de points : ${error.message}`);
+    throw new Error('Erreur lors de la récupération du solde de points !');
+    }
+  }
 }
