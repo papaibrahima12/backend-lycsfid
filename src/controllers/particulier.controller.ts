@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Bon } from 'src/entities/Bon.entity';
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { Historique } from 'src/entities/Historique.entity';
 import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Program } from 'src/entities/Program.entity';
 import { ParticulierGuard } from 'src/guards/particulier.guard';
@@ -77,6 +78,20 @@ export class ParticulierController {
   async getPoints(@Request() request: { user: { userId: number }}): Promise<PointParEntreprise[]> {
     const userId = request['user'].userId;
     return this.particulierService.getPoints(userId);
+  }
+
+  
+  @Get('particulier/historiques/all')
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: "Limite d'éléments par page",
+    required: false,
+  })
+  async getHistoriques(@Request() request: { user: { userId: number }}): Promise<Historique[]> {
+    const userId = request['user'].userId;
+    return this.particulierService.getHistoriques(userId);
   }
 
 }

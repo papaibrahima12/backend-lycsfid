@@ -1,7 +1,7 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
-import { secretKey } from './auth/config';
+import { secretKey } from '../config/config';
 import { Request } from 'express';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class CompanyGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,
       });
-      if (payload.role == 'admin' || payload.role == 'client') {
+      if (payload.role !== 'entreprise') {
         throw new UnauthorizedException('Seuls les entreprises peuvent accéder à cette ressource');
       }
       console.log(payload);

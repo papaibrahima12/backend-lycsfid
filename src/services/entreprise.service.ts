@@ -4,10 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Mecanisme } from 'src/entities/Mecanisme.entity';
-import { Particulier } from 'src/entities/Particulier.entity';
-import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Program } from 'src/entities/Program.entity';
-import { Verification } from 'src/entities/Verification.entity';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -15,10 +12,7 @@ export class EntrepriseService {
     private readonly logger = new Logger(EntrepriseService.name);
     constructor(@InjectRepository(Mecanisme) private mecanismeModel: Repository<Mecanisme>,
                 @InjectRepository(Program) private programModel: Repository<Program>,
-                @InjectRepository(Verification) private verificationModel: Repository<Verification>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
-                @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
-                @InjectRepository(PointParEntreprise) private pointModel: Repository<PointParEntreprise>,
                 @InjectRepository(Caissier) private caissierModel: Repository<Caissier>
     ){}
 
@@ -55,6 +49,7 @@ export class EntrepriseService {
         adresse: caissierData.adresse,
         entreprise: entreprise, 
         password : hashedPassword,
+        verified: false,
         new_password : hashedPassword,
         createdAt: new Date()
    });     
@@ -147,78 +142,7 @@ export class EntrepriseService {
     return { message: ' Programme créé avec succès !', programme: newProgram };
   }
 
-  async attributePoints(userId: number, clientId: number, montant: number): Promise<{ message: string }>{
-    const entreprise = await this.entrepriseModel.findOne({ where: { id: userId } });
-    if (!entreprise) {
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Entreprise non trouvée !',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    // const client = await this.particulierModel.findOne({where: {id: clientId}})   
-
-    const particulier = await this.particulierModel.findOne({where: {id: clientId}});
-    if(!particulier){
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Particulier non trouvé !',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-
-    const programme = await this.programModel.findOne({where:{entreprise: entreprise , isActive:true}});
-    if(!programme){
-      throw new HttpException(
-        {
-          status: HttpStatus.NOT_FOUND,
-          error: 'Aucun programme en cours, verifiez vos programmes !',
-        },
-        HttpStatus.NOT_FOUND,
-      );
-    }
-    var equiPoint = 0;
-    if(programme.systemePoint == 'palier achat'){
-      if(montant < programme.montantAttribution){
-        equiPoint = 0;
-      }else{
-        equiPoint = Math.floor(montant / programme.montantAttribution);
-        console.log('points',Math.floor(equiPoint));
-      }
-      
-    }else if(programme.systemePoint == 'seuil achat'){
-      if(montant < programme.montantAttribution){
-        equiPoint = 0;
-      }else{
-        equiPoint = programme.nombrePointsAttribution;
-      }
-    }
-
-    const clientPoints = await this.pointModel.findOne({where:{entreprise: entreprise, client: particulier}})
-    console.log('Client verif',clientPoints);
-    if(!clientPoints){
-      const newClientPoints = new PointParEntreprise();
-      newClientPoints.nombrePoints = equiPoint;
-      newClientPoints.client = particulier;
-      newClientPoints.entreprise = entreprise;
-      particulier.soldePoints = [newClientPoints];
-      console.log('Solde Points',particulier.soldePoints);
-      await this.pointModel.save(newClientPoints);
-    }else{
-      clientPoints.client = particulier;
-      clientPoints.nombrePoints += equiPoint;
-      particulier.soldePoints = [clientPoints];
-      console.log('Solde Points existant',particulier.soldePoints);
-    }
-    await this.pointModel.save(clientPoints);
-    await this.particulierModel.save(particulier);
-    return { message: 'Attribution Reussie, vous avez attribué '+equiPoint+' point(s)' };
-  }
+  
 
   async activateProgramme(id: number): Promise<{ message: string }> {
         const existingProgram = await this.programModel.findOne({where:{id:id}});

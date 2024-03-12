@@ -1,15 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
+import { OtpService } from './otp.service';
 
 @Injectable()
 export class SendMessageServiceService {
-    private readonly baseUrl = 'https://api.orange.com/oauth/v3/token';
+    private readonly baseUrl = process.env.URL_GEN_TOKEN;
     private readonly clientId = process.env.SMS_USERNAME;
     private readonly clientSecret = process.env.SMS_PASSWORD;
     private readonly devNumber = process.env.DEV_NUMBER;
     private readonly sendMessUrl = `https://api.orange.com/smsmessaging/v1/outbound/tel%3A%2B${this.devNumber}/requests`;
     
-    async generateToken(): Promise<string> {  
+    constructor(private readonly otpService: OtpService){
+        
+    }
+
+    async generateToken() {  
         try{ 
         const credentials = `${this.clientId}:${this.clientSecret}`;
         const base64Credentials = Buffer.from(credentials).toString('base64');
@@ -31,23 +36,29 @@ export class SendMessageServiceService {
         }
     }
 
-    async sendSMS(receiver: string,message){
+    async sendSMS(receiver: string){
         try {
+            const otp = this.otpService.generateOtp();
+            this.otpService.storeOtp(receiver, otp);
+
+            const message = `Votre code OTP est : ${otp}.Il est valide pendant 1 minutes.`;
+
+            const token = await this.generateToken();
+
             const data = {
                 "outboundSMSMessageRequest": {
-                    "address": receiver,
-                    "senderAddress":this.devNumber,
+                    "address": "tel:+221"+receiver,
+                    "senderAddress":"tel:+"+this.devNumber,
                     "outboundSMSTextMessage": {
                         "message": message
                     }
                 }
             };
             const headers = {
-                Authorization: `Bearer ${this.generateToken()}`,
+                Authorization: `Bearer ${token}`,
                 'Content-Type': 'application/json',
                 };
             const response = await axios.post(this.sendMessUrl, data, { headers });
-
             return response;   
         } catch (error) {
             console.error('error', error);

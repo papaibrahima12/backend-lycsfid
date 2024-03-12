@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Bon } from 'src/entities/Bon.entity';
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { Historique } from 'src/entities/Historique.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Program } from 'src/entities/Program.entity';
@@ -16,7 +17,8 @@ export class ParticulierService {
                 @InjectRepository(Program) private programModel: Repository<Program>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
-                @InjectRepository(PointParEntreprise) private pointModel: Repository<PointParEntreprise>,      
+                @InjectRepository(PointParEntreprise) private pointModel: Repository<PointParEntreprise>,   
+                @InjectRepository(Historique) private historiqueModel: Repository<Historique>,
                 ){}
       
      async getBons(): Promise<Bon[]> {
@@ -72,10 +74,31 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
       );
     }
     const points = await this.pointModel.find({ where: { client } });
+    const entreprise = points[0].entreprise;
     return points;
   } catch (error) {
     this.logger.error(`Erreur lors de la récupération du solde de points : ${error.message}`);
     throw new Error('Erreur lors de la récupération du solde de points !');
     }
   }
+
+  async getHistoriques(clientId: number): Promise<Historique[]> {
+    try {
+      const client = await this.particulierModel.findOne({ where: { id: clientId } });
+      if (!client) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: 'Particulier non trouvé !',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const historiques = await this.historiqueModel.find({ where: { client } });
+      return historiques;
+    } catch (error) {
+      this.logger.error(`Erreur lors de la récupération de l'historique : ${error.message}`);
+      throw new Error("Erreur lors de la récupération de l'historique !");
+      }
+    }
 }

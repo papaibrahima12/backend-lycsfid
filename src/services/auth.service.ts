@@ -8,10 +8,10 @@ import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Verification } from 'src/entities/Verification.entity';
 import { SendEmailService } from './send-email.service';
-import { Expression } from 'mongoose';
 import * as AWS from 'aws-sdk';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from './sendmessageservice.service';
+import { OtpService } from './otp.service';
 
 @Injectable()
 export class AuthService {
@@ -22,7 +22,7 @@ export class AuthService {
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
                @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
                @InjectRepository(Caissier) private readonly caissierRepository: Repository<Caissier>,
-              private jwtService: JwtService, private sendEmailService:SendEmailService, private sendMessService: SendMessageServiceService) {}
+              private jwtService: JwtService, private sendEmailService:SendEmailService,private otpService: OtpService, private sendMessService: SendMessageServiceService) {}
  
   async registerAdmin(email: string, adresse:string, password: string, new_password:string): Promise<{ message: string }> {
      const user = await this.userRepository.findOne({ where:{ email: email }});
@@ -169,7 +169,7 @@ export class AuthService {
       return {token,user};
   }
 
-  async loginCaissier(telephone: string, password: string): Promise<{ token: string; caissier: Caissier }> {
+  async loginCaissier(telephone: string, password: string): Promise<{token: string, caissier: Caissier}> {
     const caissier = await this.caissierRepository.findOne({ where:{telephone: telephone} });
     if (!caissier) {
       throw new HttpException({
@@ -181,10 +181,35 @@ export class AuthService {
     if (!passwordMatch) {
       throw new UnauthorizedException('Mot de passe incorrect');
     }
+    // await this.sendMessService.sendSMS(telephone);
     const payload = { caissierId: caissier.id, role:caissier.role };
     const token = this.jwtService.sign(payload); 
-    return {token,caissier};
+    return {token, caissier};
 }
+
+  async verifyOtpAndLogin(userId: number, enteredOtp: string): Promise<{token: string,existCaissier: Caissier }>{
+    const existCaissier = await this.caissierRepository.findOne({ where:{id: userId} });
+    if (!existCaissier) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Compte inexistant, veuillez vous inscrire svp !",
+      }, HttpStatus.NOT_FOUND)
+    }
+    const optStored = this.otpService.getOtp(existCaissier.telephone);
+    console.log('Otp entered', enteredOtp);
+    console.log('Otp stpred', optStored);
+    if (optStored !== enteredOtp) {
+        throw new UnauthorizedException('Code OTP incorrect ou expiré');
+    }
+
+    const payload = { caissierId: existCaissier.id, role: existCaissier.role };
+
+    const token = this.jwtService.sign(payload);
+
+    return { token, existCaissier };
+  }
+
+
 
   async changePasswordCompany(verificationCode:string, new_password:string, new_password_conf: string):Promise<{ message: string}>{
     const company= await this.entrepriseRepository.findOne({ where:{verificationCode:verificationCode }});
@@ -260,9 +285,10 @@ export class AuthService {
     }
   }
 
-  async getCaissiers(): Promise<Caissier[]> {
+  async getCaissiers(entrepriseId: number): Promise<Caissier[]> {
     try {
-      const caissiers = await this.caissierRepository.find({});
+      const existEntreprise = await this.entrepriseRepository.find({where: {id: entrepriseId}});
+      const caissiers = await this.caissierRepository.find({where: {entreprise: existEntreprise}});
       return caissiers;
     } catch (error) {
       this.logger.error(`Erreur lors du chargement des caissiers: ${error.message}`);
@@ -360,17 +386,4 @@ export class AuthService {
     });
   }
 
-  async generateRandomCode(length: number){
-    let result = "";
-    let characters ="0123456789";
-    let charactersLength = characters.length;
-    for (let i = 0; i < length; i++) {
-        result += characters.charAt(Math.floor(Math.random() * charactersLength));
-    }
-    return result;
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
 }

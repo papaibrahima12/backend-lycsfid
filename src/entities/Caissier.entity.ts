@@ -18,7 +18,6 @@ export class Caissier {
   @Column({type:'varchar', length:40, nullable:true, unique:true})
   email: string;
 
-
   @IsNotEmpty({message: "L'adresse ne doit pas etre vide !"})
   @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
   @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
@@ -35,11 +34,13 @@ export class Caissier {
 
   @IsNotEmpty({message: "Le mot de passe est requis !"})
   @MinLength(6,{message:"Revoyez le nombre de caracteres svp, le mot de passe doit etre au minimum 6 caracteres"})
+  @MaxLength(6,{message:"Revoyez le nombre de caracteres svp, le mot de passe doit etre au maximum 6 caracteres"})
   @Column({type:'varchar', length:255, nullable:false})
   password: string;
 
   @IsNotEmpty({message: "La confirmation du mot de passe est requise !"})
   @MinLength(6,{message:"Revoyez le nombre de caracteres svp, la confirmation du mot de passe doit etre au minimum 6 caracteres"})
+  @MaxLength(6,{message:"Revoyez le nombre de caracteres svp, la confirmation du mot de passe doit etre au maximum 6 caracteres"})
   @Column({type:'varchar', length:255, nullable:false})
   new_password: string;
 

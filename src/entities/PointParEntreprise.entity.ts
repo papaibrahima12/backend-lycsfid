@@ -1,6 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { IsEnum } from "class-validator";
-import { Column, Entity, JoinColumn, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Entreprise } from "./Entreprise.entity";
 import { Particulier } from "./Particulier.entity";
 

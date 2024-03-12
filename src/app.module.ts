@@ -1,4 +1,4 @@
-import { SendMessageServiceService } from './services/sendmessageservice.service';
+import { AgentModule } from './modules/agent.module';
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -9,6 +9,7 @@ import { FileModuleModule } from './file-module/file-module.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ParticulierModule } from './modules/particulier.module';
 import { EntrepriseModule } from './modules/entreprise.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 
 @Module({
@@ -29,13 +30,15 @@ import { EntrepriseModule } from './modules/entreprise.module';
       synchronize: true,
       logging: true,
     }),
+    ScheduleModule.forRoot(),
     UserAuthModule,
     MailModule,
     FileModuleModule,
     ParticulierModule,
-    EntrepriseModule
+    EntrepriseModule,
+    AgentModule
   ],
   controllers: [AppController],
-  providers: [SendMessageServiceService, AppService],
+  providers: [AppService],
 })
 export class AppModule { }

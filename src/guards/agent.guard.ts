@@ -1,10 +1,11 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
+import { Observable } from 'rxjs';
 import { secretKey } from '../config/config';
+import { Request } from 'express';
 
 @Injectable()
-export class ParticulierGuard implements CanActivate {
+export class AgentGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -16,17 +17,17 @@ export class ParticulierGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,
       });
-      if (payload.role !== 'client') {
-        throw new UnauthorizedException('Seuls les clients peuvent accéder à cette ressource');
+      if (payload.role !== 'caissier') {
+        throw new UnauthorizedException('Seuls les agents peuvent accéder à cette ressource');
       }
       console.log(payload);
-      if (payload.userId) {
-      request['userId'] = payload.userId;
+      if (payload.caissierId) {
+      request['userId'] = payload.caissierId;
     } else {
-      throw new UnauthorizedException("Les informations sur le client sont introuvables");
+      throw new UnauthorizedException("Les informations sur l'entreprise sont introuvables");
     }
       request['user'] = payload;
-      console.log('test',request['user'].userId)
+      console.log('test',request['user'].caissierId)
     return true;
   }
 

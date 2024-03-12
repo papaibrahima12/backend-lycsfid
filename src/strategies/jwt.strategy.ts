@@ -2,7 +2,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { Request } from 'express';
 import  {ExtractJwt, Strategy} from 'passport-jwt'
-import { secretKey } from 'src/guards/auth/config';
+import { secretKey } from 'src/config/config';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {

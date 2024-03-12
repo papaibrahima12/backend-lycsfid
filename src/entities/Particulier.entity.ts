@@ -1,5 +1,5 @@
 import { IsEnum, IsNotEmpty, MaxLength, MinLength } from "class-validator";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { PointParEntreprise } from "./PointParEntreprise.entity";
 
 @Entity()
@@ -46,7 +46,8 @@ export class Particulier {
   @Column({type:'varchar', length:255, nullable:false})
   new_password: string;
 
-  @OneToMany(() => PointParEntreprise, (point) => point.client)
+  @OneToOne(() => PointParEntreprise, (point) => point.client)
+  @JoinColumn({ name: 'pointId' })
   soldePoints: PointParEntreprise[];
 
   @Column({ default: false })

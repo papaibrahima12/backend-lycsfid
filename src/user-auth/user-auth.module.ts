@@ -1,7 +1,7 @@
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { secretKey } from 'src/guards/auth/config';
+import { secretKey } from 'src/config/config';
 import { AuthController } from 'src/controllers/auth.controller';
 import { AuthService } from 'src/services/auth.service';
 import { VerificationService } from 'src/services/verification.service';
@@ -16,6 +16,7 @@ import { PassportModule } from '@nestjs/passport';
 import { Bon } from 'src/entities/Bon.entity';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
+import { OtpService } from 'src/services/otp.service';
 
 @Module({
   imports: [
@@ -35,6 +36,6 @@ import { SendMessageServiceService } from 'src/services/sendmessageservice.servi
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, VerificationService,SendMessageServiceService, Session, SendEmailService],
+  providers: [AuthService,OtpService,VerificationService,SendMessageServiceService, Session, SendEmailService],
 })
 export class UserAuthModule {}

@@ -1,7 +1,7 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { secretKey } from 'src/guards/auth/config';
+import { secretKey } from 'src/config/config';
 import { SendEmailService } from 'src/services/send-email.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Entreprise } from 'src/entities/Entreprise.entity';

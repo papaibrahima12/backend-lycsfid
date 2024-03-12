@@ -28,9 +28,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { CompanyGuard } from 'src/guards/company.guard';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
+import { AgentGuard } from 'src/guards/agent.guard';
+import { OtpService } from 'src/services/otp.service';
 
 @ApiTags('Authentication for all users')
-@ApiConsumes('application/w')
 @Controller('api/auth')
 export class AuthController {
   constructor(
@@ -38,6 +39,7 @@ export class AuthController {
     private readonly emailService: SendEmailService,
     private readonly verificationService: VerificationService,
     private readonly sendSMSService: SendMessageServiceService,
+    private readonly otpService: OtpService,
   ) {}
 
   @Post('admin/register')
@@ -350,18 +352,39 @@ export class AuthController {
   })
   async loginCaissier(
     @Body() body: { telephone: string; password: string },
-  ): Promise<{ message: string; token: string; caissier: Caissier }> {
+  ): Promise<{message: string; token:string; caissier: Caissier }> {
     const { telephone, password } = body;
     const result = await this.userAuthService.loginCaissier(
       telephone,
       password,
     );
+    return {message: 'Connexion Réussie', token: result.token, caissier: result.caissier};
+  }
+
+  @Post('agent/validateLogin')
+  @UseGuards(AgentGuard)
+  @ApiBearerAuth()
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        codeOtp: { type: 'string' },
+      },
+    },
+    description: 'Connexion Client',
+  })
+  async validateCaissierAndPass(@Request() request: { user: { caissierId: number } },
+    @Body() body: {codeOtp: string }): Promise<{ message: string; token: string; caissier: Caissier }> {
+    const userId = request['user'].caissierId;  
+      const result = await this.userAuthService.verifyOtpAndLogin(userId,body.codeOtp);
     return {
       message: 'Connexion Réussie',
       token: result.token,
-      caissier: result.caissier,
+      caissier: result.existCaissier
     };
   }
+
+  
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -412,6 +435,25 @@ export class AuthController {
     const { email } = body;
     await this.emailService.sendResetPasswordEmail(email);
     return { message: 'Un email vous a été envoyé avec succès !' };
+  }
+
+  @Post('sms/test')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        address: { type: 'string' },
+        message: { type: 'string' },
+      },
+    },
+    description: 'Send sms for test',
+  })
+  async testSendMessage(
+    @Body() body: { address: string, message:string },
+  ): Promise<{ message: string }> {
+    const { address } = body;
+    await this.sendSMSService.sendSMS(address);
+    return { message: 'Un SMS vous a été envoyé avec succès !' };
   }
 
   @Post('company/password/reset')
@@ -467,11 +509,12 @@ export class AuthController {
     return this.userAuthService.getClients();
   }
 
-  @Get('agents')
+  @Get('company/agents')
   @UseGuards(CompanyGuard)
   @ApiBearerAuth()
-  async getCaissiers(): Promise<Caissier[]> {
-    return this.userAuthService.getCaissiers();
+  async getCaissiers(@Request() request: { user: { userId: number } },): Promise<Caissier[]> {
+    const userId = request['user'].userId;
+    return this.userAuthService.getCaissiers(userId);
   }
 
   @Get('companies')
@@ -479,6 +522,20 @@ export class AuthController {
   @ApiBearerAuth()
   async getEntreprises(): Promise<Entreprise[]> {
     return this.userAuthService.getEntreprises();
+  }
+
+  @Post('agent/otp')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        telephone: { type: 'string' },
+      },
+    },
+    description: 'verification code',
+  })
+  async getOTPs(@Body() body: {telephone: string}) {
+    return this.otpService.getOtp(body.telephone);
   }
 
   @Get('admin/verifications')
