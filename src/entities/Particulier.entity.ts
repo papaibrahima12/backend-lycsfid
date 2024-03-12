@@ -46,7 +46,7 @@ export class Particulier {
   @Column({type:'varchar', length:255, nullable:false})
   new_password: string;
 
-  @OneToOne(() => PointParEntreprise, (point) => point.client)
+  @ManyToOne(() => PointParEntreprise, (point) => point.client)
   @JoinColumn({ name: 'pointId' })
   soldePoints: PointParEntreprise[];
 

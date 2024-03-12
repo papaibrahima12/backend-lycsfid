@@ -14,21 +14,16 @@ import {
   ApiParam,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { OtpService } from 'src/services/otp.service';
-import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
 import { AgentGuard } from 'src/guards/agent.guard';
-import { info } from 'console';
 
 
-@ApiTags('Authentication for Agent')
+@ApiTags('Agents Services')
 @UseGuards(AgentGuard)
 @ApiBearerAuth() 
-@Controller('api/auth')
+@Controller('api/v1')
 export class AgentController { 
     constructor(
         private readonly agentService: AgentService,
-        private readonly sendSMSService: SendMessageServiceService,
-        private readonly otpService: OtpService,
       ) {}
 
   @Post('agent/points/attribute')
@@ -63,9 +58,10 @@ export class AgentController {
     return this.agentService.enleverPoint(caissierId, infos.entrepriseId, infos.clientId, infos.montant);
   }
 
-  @Get('agent/particulier/:id')
-  @ApiParam({ name: 'id', description: 'ID du Particulier' })
-  async getParticulier(@Param('id') id: number): Promise<any> {
-    return this.agentService.getParticulier(id);
+  @Get('agent/cancel/transaction/:id')
+  @ApiParam({ name: 'id', description: 'ID Client' })
+  async cancelTransaction(@Param('id') id: number,@Request() request: { user: { caissierId: number }}): Promise<any> {
+    const caissierId = request['user'].caissierId;
+    return this.agentService.annulerTransaction(caissierId, id);
   }
 }

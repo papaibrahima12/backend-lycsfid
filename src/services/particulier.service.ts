@@ -73,8 +73,7 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
         HttpStatus.NOT_FOUND,
       );
     }
-    const points = await this.pointModel.find({ where: { client } });
-    const entreprise = points[0].entreprise;
+    const points = await this.pointModel.find({ where: { client }, relations: ['entreprise'] });
     return points;
   } catch (error) {
     this.logger.error(`Erreur lors de la récupération du solde de points : ${error.message}`);

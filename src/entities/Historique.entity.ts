@@ -33,4 +33,7 @@ export class Historique {
   @Column({type:'timestamptz',nullable:true})
   @ApiProperty({required:false})
   dateTransaction: Date;
+
+  @Column({default:false})
+  isCanceled: boolean;
 }

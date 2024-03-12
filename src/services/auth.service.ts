@@ -170,7 +170,7 @@ export class AuthService {
   }
 
   async loginCaissier(telephone: string, password: string): Promise<{token: string, caissier: Caissier}> {
-    const caissier = await this.caissierRepository.findOne({ where:{telephone: telephone} });
+    const caissier = await this.caissierRepository.findOne({ where:{telephone: telephone},  relations: ['entreprise'] });
     if (!caissier) {
       throw new HttpException({
         status: HttpStatus.NOT_FOUND,

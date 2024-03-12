@@ -199,7 +199,7 @@ export class AgentService {
         nombrePoints: equiPoint,
         montant: montant,
         typeTransaction: 'utilisation',
-        client: pointClient.client,
+        client: particulier,
         entreprise: entreprise,
         dateTransaction: todayDateTime
       });
@@ -207,6 +207,67 @@ export class AgentService {
       particulier.soldePoints = [pointClient]; 
       return { message: 'vous avez utilisé '+equiPoint+' point(s) de votre solde' };
 
+    }
+
+    async annulerTransaction(caissierId:number, clientId: number){
+      const particulier = await this.particulierModel.findOne({where: {id: clientId}});
+      if(!particulier){
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: 'Particulier non trouvé !',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const caissier = await this.caissierModel.findOne({ where: { id: caissierId } });
+      if (!caissier) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: 'Agent introuvable !',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const existHistorique = await this.historiqueModel.findOne({
+        where: { client: particulier, typeTransaction: 'attribution', isCanceled: false },
+        order: { dateTransaction: 'DESC' }
+      });
+      const entreprise = existHistorique.entreprise;
+      console.log('Histo',existHistorique);
+      if (!existHistorique) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: 'Aucune transaction récente trouvée pour ce particulier !',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      
+      const pointCorrespondant = await this.pointModel.findOne({where: {client: particulier, entreprise: entreprise}});
+      console.log('test', pointCorrespondant);
+      if (!pointCorrespondant) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: "Aucun solde de points trouvé pour l'entreprise associée à cette transaction !",
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      
+      const equiPoint = existHistorique.nombrePoints;
+      pointCorrespondant.nombrePoints -= equiPoint;
+      
+      await this.pointModel.save(pointCorrespondant);
+      existHistorique.isCanceled = true;
+      await this.historiqueModel.save(existHistorique);
+
+      return { message: 'Transaction annulée avec succès !'};
     }
 
 }
