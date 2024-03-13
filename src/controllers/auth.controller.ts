@@ -412,13 +412,6 @@ export class AuthController {
     return result;
   }
 
-  @Get('admin/generateToken/')
-  @ApiConsumes('application/x-www-form-urlencoded')
-  async generateToken() {
-    const result = await this.sendSMSService.generateToken();
-    return result;
-  }
-
   @Post('company/resetPassword')
   @ApiBody({
     schema: {
@@ -435,25 +428,6 @@ export class AuthController {
     const { email } = body;
     await this.emailService.sendResetPasswordEmail(email);
     return { message: 'Un email vous a été envoyé avec succès !' };
-  }
-
-  @Post('sms/test')
-  @ApiBody({
-    schema: {
-      type: 'object',
-      properties: {
-        address: { type: 'string' },
-        message: { type: 'string' },
-      },
-    },
-    description: 'Send sms for test',
-  })
-  async testSendMessage(
-    @Body() body: { address: string, message:string },
-  ): Promise<{ message: string }> {
-    const { address } = body;
-    await this.sendSMSService.sendSMS(address);
-    return { message: 'Un SMS vous a été envoyé avec succès !' };
   }
 
   @Post('company/password/reset')
@@ -507,14 +481,6 @@ export class AuthController {
   @ApiBearerAuth()
   async getParticuliers(): Promise<Particulier[]> {
     return this.userAuthService.getClients();
-  }
-
-  @Get('company/agents')
-  @UseGuards(CompanyGuard)
-  @ApiBearerAuth()
-  async getCaissiers(@Request() request: { user: { userId: number } },): Promise<Caissier[]> {
-    const userId = request['user'].userId;
-    return this.userAuthService.getCaissiers(userId);
   }
 
   @Get('companies')

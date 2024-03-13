@@ -285,17 +285,6 @@ export class AuthService {
     }
   }
 
-  async getCaissiers(entrepriseId: number): Promise<Caissier[]> {
-    try {
-      const existEntreprise = await this.entrepriseRepository.find({where: {id: entrepriseId}});
-      const caissiers = await this.caissierRepository.find({where: {entreprise: existEntreprise}});
-      return caissiers;
-    } catch (error) {
-      this.logger.error(`Erreur lors du chargement des caissiers: ${error.message}`);
-      throw new Error('Erreur lors du chargement des caissiers');
-    }
-  }
-
   async getVerifications(): Promise<Verification[]> {
     try {
       const verifications = await this.verificationRepository.find({});

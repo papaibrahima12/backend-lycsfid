@@ -1,6 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { Entreprise } from "./Entreprise.entity";
 import { Particulier } from "./Particulier.entity";
+import { Caissier } from "./Caissier.entity";
 
 @Entity()
 export class PointParEntreprise {
@@ -17,4 +18,8 @@ export class PointParEntreprise {
   @ManyToOne(() => Entreprise, (entreprise) => entreprise.points)
   @JoinColumn({ name: 'entrepriseId' })
   entreprise: Entreprise;
+
+  @ManyToOne(() => Caissier, { nullable:false })
+  @JoinColumn({ name: 'caissierId' })
+  caissier: Caissier;
 }

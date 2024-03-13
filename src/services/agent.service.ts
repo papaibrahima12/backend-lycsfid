@@ -30,9 +30,7 @@ export class AgentService {
           HttpStatus.NOT_FOUND,
         );
       }
-  
-      // const client = await this.particulierModel.findOne({where: {id: clientId}})   
-  
+    
       const particulier = await this.particulierModel.findOne({where: {id: clientId}});
       if(!particulier){
         throw new HttpException(
@@ -57,15 +55,14 @@ export class AgentService {
       var equiPoint = 0;
       if(programme.systemePoint == 'palier achat'){
         if(montant < programme.montantAttribution){
-          equiPoint = 0;
+          return { message: 'Attribution impossible, Revoyez le montant !' };
         }else{
-          equiPoint = Math.floor(montant / programme.montantAttribution);
-          console.log('points',Math.floor(equiPoint));
+          equiPoint = Math.floor((montant * programme.nombrePointsAttribution)/ programme.montantAttribution);
         }
         
       }else if(programme.systemePoint == 'seuil achat'){
         if(montant < programme.montantAttribution){
-          equiPoint = 0;
+          return { message: 'Attribution impossible, Revoyez le montant !' };
         }else{
           equiPoint = programme.nombrePointsAttribution;
         }
@@ -80,13 +77,14 @@ export class AgentService {
       var ss = today.getSeconds();
       var todayDateTime = new Date(YYYY, MM, DD, hh, mm, ss)
   
-      const clientPoints = await this.pointModel.findOne({where:{entreprise: entreprise, client: particulier}})
+      const clientPoints = await this.pointModel.findOne({where:{entreprise: entreprise, client: particulier, caissier: caissier}})
       console.log('Client verif', clientPoints);
       if(!clientPoints){
         const newClientPoint = new PointParEntreprise(); 
           newClientPoint.nombrePoints = equiPoint;
           newClientPoint.client = particulier;
-         newClientPoint.entreprise = entreprise;
+          newClientPoint.entreprise = entreprise;
+          newClientPoint.caissier = caissier;
 
         await this.pointModel.save(newClientPoint);
         particulier.soldePoints = [newClientPoint];
@@ -96,13 +94,14 @@ export class AgentService {
           typeTransaction: 'attribution',
           client: newClientPoint.client,
           entreprise: newClientPoint.entreprise,
+          caissier: caissier,
           dateTransaction: todayDateTime
         });
         await this.historiqueModel.save(historique);
       }else{
           clientPoints.nombrePoints += equiPoint;
           clientPoints.client = particulier;
-      
+
           await this.pointModel.save(clientPoints);
 
           const updatedClientPoint = await this.pointModel.findOne({
@@ -116,6 +115,7 @@ export class AgentService {
             typeTransaction: 'attribution',
             client: updatedClientPoint.client,
             entreprise: updatedClientPoint.entreprise,
+            caissier: caissier,
             dateTransaction: todayDateTime
           });
           await this.historiqueModel.save(historique);
@@ -184,12 +184,21 @@ export class AgentService {
 
       var equiPoint = 0;
         if(montant < programme.montantRedemption){
-          equiPoint = 0;
+          return { message: 'Utilisation impossible, Revoyez le montant !' };
         }else{
           equiPoint = Math.floor((montant * programme.nombrePointsRedemption) / programme.montantRedemption);
           console.log('points',Math.floor(equiPoint));
         }
       const pointClient = await this.pointModel.findOne({where: {entreprise: entreprise, client: particulier}});
+      if (!pointClient) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: "Aucun solde de points trouvé pour ce particulier !",
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
       if(pointClient.nombrePoints < equiPoint) {
         return { message: 'Votre solde de point est insuffisant pour faire cette transaction !' };
       }
@@ -201,6 +210,7 @@ export class AgentService {
         typeTransaction: 'utilisation',
         client: particulier,
         entreprise: entreprise,
+        caissier: caissier,
         dateTransaction: todayDateTime
       });
       await this.historiqueModel.save(historique);
@@ -209,18 +219,7 @@ export class AgentService {
 
     }
 
-    async annulerTransaction(caissierId:number, clientId: number){
-      const particulier = await this.particulierModel.findOne({where: {id: clientId}});
-      if(!particulier){
-        throw new HttpException(
-          {
-            status: HttpStatus.NOT_FOUND,
-            error: 'Particulier non trouvé !',
-          },
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
+    async annulerTransaction(caissierId:number, transactionId: number){
       const caissier = await this.caissierModel.findOne({ where: { id: caissierId } });
       if (!caissier) {
         throw new HttpException(
@@ -231,12 +230,12 @@ export class AgentService {
           HttpStatus.NOT_FOUND,
         );
       }
+      const entreprise = caissier.entreprise;
 
       const existHistorique = await this.historiqueModel.findOne({
-        where: { client: particulier, typeTransaction: 'attribution', isCanceled: false },
+        where: { id: transactionId, caissier:caissier, typeTransaction: 'attribution',isCanceled: false },
         order: { dateTransaction: 'DESC' }
       });
-      const entreprise = existHistorique.entreprise;
       console.log('Histo',existHistorique);
       if (!existHistorique) {
         throw new HttpException(
@@ -247,9 +246,11 @@ export class AgentService {
           HttpStatus.NOT_FOUND,
         );
       }
+      const particulier = existHistorique.client;
+      console.log('particulier', particulier);
       
-      const pointCorrespondant = await this.pointModel.findOne({where: {client: particulier, entreprise: entreprise}});
-      console.log('test', pointCorrespondant);
+      const pointCorrespondant = await this.pointModel.findOne({where: {client: particulier, entreprise: entreprise, caissier: caissier}});
+      console.log('test object', pointCorrespondant);
       if (!pointCorrespondant) {
         throw new HttpException(
           {
@@ -259,9 +260,26 @@ export class AgentService {
           HttpStatus.NOT_FOUND,
         );
       }
+
+      if (pointCorrespondant.nombrePoints == 0){
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            error: "Votre solde de points est de 0 FCFA !",
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }
       
       const equiPoint = existHistorique.nombrePoints;
       pointCorrespondant.nombrePoints -= equiPoint;
+      const diffPoint = pointCorrespondant.nombrePoints;
+      if(diffPoint < 0){
+        return { message: "Impossible d'annuler la transaction !"};
+      }
+
+
+      console.log('equipoints', pointCorrespondant.nombrePoints);
       
       await this.pointModel.save(pointCorrespondant);
       existHistorique.isCanceled = true;

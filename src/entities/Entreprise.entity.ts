@@ -23,8 +23,7 @@ export class Entreprise {
   email: string;
 
   @IsNotEmpty({message: "L'adresse ne doit pas etre vide !"})
-  @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
-  @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
+  @Column({type:'varchar', length: 255, nullable:true})
   @ApiProperty({required:true})
   adresse: string;
 

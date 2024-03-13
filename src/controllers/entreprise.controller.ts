@@ -8,7 +8,7 @@ import { EntrepriseService } from 'src/services/entreprise.service';
 @Controller('api/v1')
 @UseGuards(CompanyGuard)
 @ApiBearerAuth() 
-@ApiTags('entreprises services')
+@ApiTags('Entreprises services')
 export class EntrepriseController {
     constructor(private readonly entrepriseService: EntrepriseService){}
 
@@ -84,5 +84,13 @@ export class EntrepriseController {
   async getPrograms(@Request() request: { user: { userId: number } }): Promise<Program[]> {
     const userId = request['user'].userId;
     return this.entrepriseService.getProgrammes(userId);
+  }
+
+  @Get('company/agents')
+  @UseGuards(CompanyGuard)
+  @ApiBearerAuth()
+  async getCaissiers(@Request() request: { user: { userId: number } },): Promise<Caissier[]> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.getCaissiers(userId);
   }
 }

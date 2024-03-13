@@ -18,10 +18,10 @@ export class Caissier {
   @Column({type:'varchar', length:40, nullable:true, unique:true})
   email: string;
 
-  @IsNotEmpty({message: "L'adresse ne doit pas etre vide !"})
-  @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
-  @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
-  adresse: string;
+  // @IsNotEmpty({message: "L'adresse ne doit pas etre vide !"})
+  // @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
+  // @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
+  // adresse: string;
 
   @IsNotEmpty({message: "Le numero de téléphone est requis !"})
   @MinLength(9,{message:"le numero de telephone doit etre au moins 9 chiffres"})

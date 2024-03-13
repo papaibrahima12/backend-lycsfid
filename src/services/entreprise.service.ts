@@ -46,7 +46,6 @@ export class EntrepriseService {
         nom: caissierData.nom,
         email: caissierData.email,
         telephone: caissierData.telephone,
-        adresse: caissierData.adresse,
         entreprise: entreprise, 
         password : hashedPassword,
         verified: false,
@@ -215,6 +214,17 @@ export class EntrepriseService {
       } catch (error) {
         this.logger.error(`Erreur lors de la récuperation des programmes: ${error.message}`);
         throw new Error('Erreur lors de la récuperation des programmes');
+    }
+  }
+
+  async getCaissiers(entrepriseId: number): Promise<Caissier[]> {
+    try {
+      const existEntreprise = await this.entrepriseModel.find({where: {id: entrepriseId}});
+      const caissiers = await this.caissierModel.find({where: {entreprise: existEntreprise}});
+      return caissiers;
+    } catch (error) {
+      this.logger.error(`Erreur lors du chargement des caissiers: ${error.message}`);
+      throw new Error('Erreur lors du chargement des caissiers');
     }
   }
 

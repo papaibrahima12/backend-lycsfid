@@ -59,7 +59,7 @@ export class AgentController {
   }
 
   @Get('agent/cancel/transaction/:id')
-  @ApiParam({ name: 'id', description: 'ID Client' })
+  @ApiParam({ name: 'id', description: 'ID Transaction' })
   async cancelTransaction(@Param('id') id: number,@Request() request: { user: { caissierId: number }}): Promise<any> {
     const caissierId = request['user'].caissierId;
     return this.agentService.annulerTransaction(caissierId, id);

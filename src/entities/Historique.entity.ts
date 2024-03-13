@@ -3,6 +3,7 @@ import { IsEnum } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Entreprise } from "./Entreprise.entity";
 import { Particulier } from "./Particulier.entity";
+import { Caissier } from "./Caissier.entity";
 
 @Entity()
 export class Historique {
@@ -29,6 +30,10 @@ export class Historique {
   @ManyToOne(() => Entreprise, { nullable:false })
   @JoinColumn({ name: 'entrepriseId' })
   entreprise: Entreprise;
+
+  @ManyToOne(() => Caissier, { nullable:false })
+  @JoinColumn({ name: 'caissierId' })
+  caissier: Caissier;
 
   @Column({type:'timestamptz',nullable:true})
   @ApiProperty({required:false})
