@@ -7,7 +7,7 @@ src/config/config.ts
 # env
 .env
 # configuration
-
+.Dockerfile
 # Logs
 logs
 *.log

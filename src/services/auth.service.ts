@@ -209,6 +209,54 @@ export class AuthService {
     return { token, existCaissier };
   }
 
+  async resetPassWordParticulier(telephone: string): Promise<any>{
+    const existParticulier = await this.particulierRepository.findOne({ where:{telephone: telephone} });
+    if (!existParticulier) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Compte inexistant, veuillez vous inscrire svp !",
+      }, HttpStatus.NOT_FOUND)
+    }
+
+    await this.sendMessService.sendSMSOTP(telephone);
+
+    const optStored = this.otpService.getOtp(existParticulier.telephone);
+    console.log('Otp stpred', optStored);
+    existParticulier.verificationCode = optStored;
+    await this.particulierRepository.save(existParticulier);
+    if (!optStored) {
+        throw new UnauthorizedException('Code OTP incorrect ou expiré');
+    }
+
+    return { message: 'Un code de 6 chiffres vous a ete envoyé par sms'};
+  }
+
+
+  async changePasswordParticulier(verificationCode:string, new_password:string, new_password_conf: string):Promise<{ message: string}>{
+    const existParticulier= await this.particulierRepository.findOne({ where:{verificationCode:verificationCode }});
+      if (!existParticulier) {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: "Ce code n'existe pas",
+        }, HttpStatus.NOT_FOUND)
+      }
+      if (new_password != new_password_conf){
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'les mots de passe ne correspondent pas',
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+
+      const hash = await bcrypt.hash(new_password, 10);
+      const hashedPassword = await bcrypt.hash(new_password, hash);
+
+      existParticulier.password = hashedPassword;
+      existParticulier.new_password = hashedPassword;
+      existParticulier.verificationCode = null;
+      this.particulierRepository.save(existParticulier);
+      return { message: "Mot de passe modifié avec succès!"};
+  }
+
 
 
   async changePasswordCompany(verificationCode:string, new_password:string, new_password_conf: string):Promise<{ message: string}>{

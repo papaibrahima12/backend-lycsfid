@@ -36,7 +36,7 @@ export class SendMessageServiceService {
         }
     }
 
-    async sendSMS(receiver: string){
+    async sendSMSOTP(receiver: string){
         try {
             const otp = this.otpService.generateOtp();
             this.otpService.storeOtp(receiver, otp);

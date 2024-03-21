@@ -261,24 +261,7 @@ export class AuthController {
         nom: { type: 'string' },
         telephone: { type: 'string' },
         adresse: {
-          type: 'enum',
-          enum: [
-            'Dakar',
-            'Thies',
-            'Diourbel',
-            'Fatick',
-            'Kaffrine',
-            'Kaolack',
-            'Kedougou',
-            'Kolda',
-            'Louga',
-            'Matam',
-            'Saint-Louis',
-            'Sedhiou',
-            'Tambacounda',
-            'Ziguinchor',
-          ],
-        },
+          type: 'string'},
         sousGroupe: { type: 'string' },
         imageProfil: {
           type: 'string',
@@ -428,6 +411,54 @@ export class AuthController {
     const { email } = body;
     await this.emailService.sendResetPasswordEmail(email);
     return { message: 'Un email vous a été envoyé avec succès !' };
+  }
+
+  @Post('particulier/resetPassword')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        telephone: { type: 'string' },
+      },
+    },
+    description: 'Reinitialisation Mot de passe',
+  })
+  async sendSMSPasswordReset(
+    @Body() body: { telephone: string },
+  ) {
+    const { telephone } = body;
+    await this.userAuthService.resetPassWordParticulier(telephone);
+    return { message: 'Un code de 6 chiffres vous a ete envoyé par sms !'};
+  }
+
+  
+  @Post('particulier/password/reset')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        verificationCode: { type: 'string' },
+        new_password: { type: 'string' },
+        new_password_conf: { type: 'string' },
+      },
+    },
+    description: 'Changement du mot de passe',
+  })
+  async changePasswordParticulier(
+    @Body()
+    body: {
+      verificationCode: string;
+      new_password: string;
+      new_password_conf: string;
+    },
+  ): Promise<{ message: string }> {
+    const { verificationCode, new_password, new_password_conf } = body;
+    await this.userAuthService.changePasswordParticulier(
+      verificationCode,
+      new_password,
+      new_password_conf,
+    );
+    return { message: 'Mot de passe changé avec succès !' };
   }
 
   @Post('company/password/reset')
