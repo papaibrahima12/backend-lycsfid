@@ -71,7 +71,7 @@ export class AuthService {
       return { message: "Inscription Réussie, votre compte est en cours d'activation ! Vous recevrez un mail !"};
  }
 
- async registerParticulier(telephone: string,birthDate: Date, adresse:string, password: string,new_password:string): Promise<{ message: string}> {
+ async registerParticulier(telephone: string,birthDate: Date, adresse:string, password: string,new_password:string): Promise<{ message: string, particulier: Particulier}> {
      const user = await this.particulierRepository.findOne({ where:{telephone:telephone }});
       if (user) {
         throw new HttpException({
@@ -93,15 +93,38 @@ export class AuthService {
     }
       const hash = await bcrypt.hash(password, 10);
       const hashedPassword = await bcrypt.hash(password, hash);
-      await this.particulierRepository.save({
+     const newParticulier = await this.particulierRepository.save({
            telephone : telephone,
            adresse : adresse,
            birthDate: birthDate,
            password : hashedPassword,
            new_password : hashedPassword,
+           verified: false
       });
-      return { message: "Inscription Réussie, veuillez vous connecter !"};
+      await this.sendMessService.sendSMSOTP(telephone);
+      return { message: "Un sms vous a été envoyé, veuillez validez votre compte !", particulier: newParticulier};
  }
+
+ async verifyOtpParticulierAndRegister(id: number, enteredOtp: string): Promise<{message: string, particulier: Particulier }>{
+  const existParticulier = await this.particulierRepository.findOne({ where:{id: id, verified: false} });
+  if (!existParticulier) {
+    throw new HttpException({
+      status: HttpStatus.NOT_FOUND,
+      error: "Compte inexistant, veuillez vous inscrire svp !",
+    }, HttpStatus.NOT_FOUND)
+  }
+  const optStored = this.otpService.getOtp(existParticulier.telephone);
+  if (optStored !== enteredOtp) {
+      throw new UnauthorizedException('Code OTP incorrect ou expiré !');
+  }
+
+  existParticulier.verified = true;
+  existParticulier.verifiedAt =new Date();
+
+  await this.particulierRepository.save(existParticulier);
+
+  return { message: 'Inscription Réussie, votre compte a bien été activé', particulier: existParticulier };
+}
 
   async loginAdmin(email: string, password: string): Promise<{ token: string; user: User }> {
       const user = await this.userRepository.findOne({ where:{ email: email }});
@@ -121,7 +144,7 @@ export class AuthService {
   }
 
   async loginCompany(email: string, password: string): Promise<{ token: string; user: Entreprise }> {
-      const user = await this.entrepriseRepository.findOne({ where:{email: email} });
+      const user = await this.entrepriseRepository.findOne({ where:{ email: email} });
       if (!user) {
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
@@ -152,24 +175,43 @@ export class AuthService {
         return null;
   }
 
-  async loginParticulier(telephone: string, password: string): Promise<{ token: string; user: Particulier }> {
-      const user = await this.particulierRepository.findOne({ where:{telephone: telephone} });
+  async loginParticulier(telephone: string, password: string): Promise<any> {
+      const user = await this.particulierRepository.findOne({ where:{telephone: telephone, verified: true} });
       if (!user) {
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
-          error: "Compte inexistant, veuillez vous inscrire svp !",
+          error: "Compte inexistant ou non vérifié, veuillez vous inscrire svp !",
         }, HttpStatus.NOT_FOUND)
       }
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
         throw new UnauthorizedException('Mot de passe incorrect');
       }
-      const payload = { userId: user.id, role:user.role };
-      const token = this.jwtService.sign(payload); 
-      return {token,user};
+      await this.sendMessService.sendSMSOTP(telephone);
+    return {message:'Un code de validation vous a été envoyé par SMS, Veuillez le saisir !', particulier: user};
   }
 
-  async loginCaissier(telephone: string, password: string): Promise<{token: string, caissier: Caissier}> {
+  async verifyOtpParticulierAndLogin(id: number, enteredOtp: string): Promise<{token: string, existParticulier: Particulier }>{
+    const existParticulier = await this.particulierRepository.findOne({ where:{id: id} });
+    if (!existParticulier) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Compte inexistant, veuillez vous inscrire svp !",
+      }, HttpStatus.NOT_FOUND)
+    }
+    const optStored = this.otpService.getOtp(existParticulier.telephone);
+    if (optStored !== enteredOtp) {
+        throw new UnauthorizedException('Code OTP incorrect ou expiré !');
+    }
+  
+    const payload = { particulierId: existParticulier.id, role: existParticulier.role };
+  
+    const token = this.jwtService.sign(payload);
+  
+    return { token, existParticulier };
+  }
+
+  async loginCaissier(telephone: string, password: string): Promise<any> {
     const caissier = await this.caissierRepository.findOne({ where:{telephone: telephone},  relations: ['entreprise'] });
     if (!caissier) {
       throw new HttpException({
@@ -181,14 +223,12 @@ export class AuthService {
     if (!passwordMatch) {
       throw new UnauthorizedException('Mot de passe incorrect');
     }
-    // await this.sendMessService.sendSMS(telephone);
-    const payload = { caissierId: caissier.id, role:caissier.role };
-    const token = this.jwtService.sign(payload); 
-    return {token, caissier};
+    await this.sendMessService.sendSMSOTP(telephone);
+    return {message:'Un code OTP vous a été envoyé par SMS !', caissier: caissier};
 }
 
-  async verifyOtpAndLogin(userId: number, enteredOtp: string): Promise<{token: string,existCaissier: Caissier }>{
-    const existCaissier = await this.caissierRepository.findOne({ where:{id: userId} });
+  async verifyOtpCaissierAndLogin(id: number, enteredOtp: string): Promise<{token: string,existCaissier: Caissier }>{
+    const existCaissier = await this.caissierRepository.findOne({ where:{id: id} });
     if (!existCaissier) {
       throw new HttpException({
         status: HttpStatus.NOT_FOUND,
@@ -196,8 +236,6 @@ export class AuthService {
       }, HttpStatus.NOT_FOUND)
     }
     const optStored = this.otpService.getOtp(existCaissier.telephone);
-    console.log('Otp entered', enteredOtp);
-    console.log('Otp stpred', optStored);
     if (optStored !== enteredOtp) {
         throw new UnauthorizedException('Code OTP incorrect ou expiré');
     }

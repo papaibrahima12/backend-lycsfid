@@ -177,15 +177,31 @@ export class AuthController {
   })
   async registerClient(
     @Body() clientInfo: Particulier,
-  ): Promise<{ message: string }> {
-    await this.userAuthService.registerParticulier(
+  ): Promise<{ message: string, particulier: Particulier }> {
+   const result = await this.userAuthService.registerParticulier(
       clientInfo.telephone,
       clientInfo.birthDate,
       clientInfo.adresse,
       clientInfo.password,
       clientInfo.new_password,
     );
-    return { message: 'Inscription reussie, Veuillez vous connecter !' };
+    return { message: result.message, particulier: result.particulier};
+  }
+
+  @Post('particulier/validateRegister')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        codeOtp: { type: 'string' },
+      },
+    },
+    description: 'Validation Client',
+  })
+  async validateClientAndRegiseter(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string, particulier: Particulier }> {
+   const result = await this.userAuthService.verifyOtpParticulierAndRegister(body.id, body.codeOtp);
+    return { message: result.message, particulier: result.particulier};
   }
 
   @Post('admin/login')
@@ -309,16 +325,35 @@ export class AuthController {
   })
   async loginParticulier(
     @Body() body: { telephone: string; password: string },
-  ): Promise<{ message: string; token: string; user: Particulier }> {
+  ): Promise<{ message: string; user: Particulier }> {
     const { telephone, password } = body;
     const result = await this.userAuthService.loginParticulier(
       telephone,
       password,
     );
     return {
+      message: result.message,
+      user: result.particulier,
+    };
+  }
+
+  @Post('particulier/validateLogin')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number' },
+        codeOtp: { type: 'string' },
+      },
+    },
+    description: 'Connexion Client',
+  })
+  async validateParticulierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; token: string; particulier: Particulier }> {
+      const result = await this.userAuthService.verifyOtpParticulierAndLogin(body.id, body.codeOtp);
+    return {
       message: 'Connexion Réussie',
       token: result.token,
-      user: result.user,
+      particulier: result.existParticulier
     };
   }
 
@@ -335,31 +370,28 @@ export class AuthController {
   })
   async loginCaissier(
     @Body() body: { telephone: string; password: string },
-  ): Promise<{message: string; token:string; caissier: Caissier }> {
+  ): Promise<{message: string; caissier: Caissier }> {
     const { telephone, password } = body;
     const result = await this.userAuthService.loginCaissier(
       telephone,
       password,
     );
-    return {message: 'Connexion Réussie', token: result.token, caissier: result.caissier};
+    return {message: 'Connexion Réussie', caissier: result.caissier};
   }
 
   @Post('agent/validateLogin')
-  @UseGuards(AgentGuard)
-  @ApiBearerAuth()
   @ApiBody({
     schema: {
       type: 'object',
       properties: {
+        id: { type: 'number' },
         codeOtp: { type: 'string' },
       },
     },
     description: 'Connexion Client',
   })
-  async validateCaissierAndPass(@Request() request: { user: { caissierId: number } },
-    @Body() body: {codeOtp: string }): Promise<{ message: string; token: string; caissier: Caissier }> {
-    const userId = request['user'].caissierId;  
-      const result = await this.userAuthService.verifyOtpAndLogin(userId,body.codeOtp);
+  async validateCaissierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; token: string; caissier: Caissier }> {
+      const result = await this.userAuthService.verifyOtpCaissierAndLogin(body.id, body.codeOtp);
     return {
       message: 'Connexion Réussie',
       token: result.token,
@@ -371,7 +403,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Get('admin/verifyCompany/:token')
+  @Get('admin/verifyCompany/:id')
   async verifyCompanyAccount(@Param('id') id: number) {
     const result = await this.verificationService.verifyCompanyAccount(id);
     return result;

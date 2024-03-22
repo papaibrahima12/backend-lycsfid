@@ -93,7 +93,7 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
           HttpStatus.NOT_FOUND,
         );
       }
-      const historiques = await this.historiqueModel.find({ where: { client } });
+      const historiques = await this.historiqueModel.find({ where: { client: client } });
       return historiques;
     } catch (error) {
       this.logger.error(`Erreur lors de la récupération de l'historique : ${error.message}`);
