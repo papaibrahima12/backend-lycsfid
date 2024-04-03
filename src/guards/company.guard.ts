@@ -1,5 +1,5 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
 import { secretKey } from '../config/config';
 import { Request } from 'express';
@@ -14,6 +14,7 @@ export class CompanyGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException("Token invalide ou inexistant !");
     }
+    try {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: secretKey.secret,
       });
@@ -29,6 +30,16 @@ export class CompanyGuard implements CanActivate {
       request['user'] = payload;
       console.log('test',request['user'].userId)
     return true;
+    } catch (error) {
+      if (error instanceof JsonWebTokenError && error.name === 'JsonWebTokenError') {
+        throw new UnauthorizedException('Token invalide, verifiez le token !');
+      } else if (error instanceof TokenExpiredError && error.name === 'TokenExpiredError') {
+       throw new UnauthorizedException('Token expiré');
+      } else {
+        throw error;
+      }
+    }
+      
   }
 
   private extractTokenFromHeader(request: { headers: { authorization?: string } }): string | undefined {

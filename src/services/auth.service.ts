@@ -1,14 +1,16 @@
-import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus, NotAcceptableException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus, NotAcceptableException, ForbiddenException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/User.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { secretKey } from '../config/config';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Verification } from 'src/entities/Verification.entity';
 import { SendEmailService } from './send-email.service';
 import * as AWS from 'aws-sdk';
+import * as argon2 from 'argon2';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from './sendmessageservice.service';
 import { OtpService } from './otp.service';
@@ -126,6 +128,14 @@ export class AuthService {
   return { message: 'Inscription Réussie, votre compte a bien été activé', particulier: existParticulier };
 }
 
+  hashData(data: string) {
+    return argon2.hash(data);
+  }
+
+  verifyData(digest:string, data:string) {
+    return argon2.verify(digest, data);
+  }
+
   async loginAdmin(email: string, password: string): Promise<{ token: string; user: User }> {
       const user = await this.userRepository.findOne({ where:{ email: email }});
       if (!user) {
@@ -176,7 +186,7 @@ export class AuthService {
   }
 
   async loginParticulier(telephone: string, password: string): Promise<any> {
-      const user = await this.particulierRepository.findOne({ where:{telephone: telephone, verified: true} });
+      const user = await this.particulierRepository.findOne({ where:{telephone: telephone} });
       if (!user) {
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
@@ -191,7 +201,7 @@ export class AuthService {
     return {message:'Un code de validation vous a été envoyé par SMS, Veuillez le saisir !', particulier: user};
   }
 
-  async verifyOtpParticulierAndLogin(id: number, enteredOtp: string): Promise<{token: string, existParticulier: Particulier }>{
+  async verifyOtpParticulierAndLogin(id: number, enteredOtp: string): Promise<{ accessToken: string, refreshToken:string, existParticulier: Particulier }>{
     const existParticulier = await this.particulierRepository.findOne({ where:{id: id} });
     if (!existParticulier) {
       throw new HttpException({
@@ -202,13 +212,15 @@ export class AuthService {
     const optStored = this.otpService.getOtp(existParticulier.telephone);
     if (optStored !== enteredOtp) {
         throw new UnauthorizedException('Code OTP incorrect ou expiré !');
-    }
+    }  
+    const tokens = this.getTokens(existParticulier.id, existParticulier.telephone, existParticulier.role);
+
+    existParticulier.refreshToken = (await tokens).refreshToken;
+    const accessToken = (await tokens).accessToken;
+    const refreshToken = (await tokens).refreshToken;
+    await this.particulierRepository.save(existParticulier);
   
-    const payload = { particulierId: existParticulier.id, role: existParticulier.role };
-  
-    const token = this.jwtService.sign(payload);
-  
-    return { token, existParticulier };
+    return { accessToken, refreshToken, existParticulier };
   }
 
   async loginCaissier(telephone: string, password: string): Promise<any> {
@@ -227,7 +239,7 @@ export class AuthService {
     return {message:'Un code OTP vous a été envoyé par SMS !', caissier: caissier};
 }
 
-  async verifyOtpCaissierAndLogin(id: number, enteredOtp: string): Promise<{token: string,existCaissier: Caissier }>{
+  async verifyOtpCaissierAndLogin(id: number, enteredOtp: string): Promise<{accessToken: string, refreshToken:string,existCaissier: Caissier }>{
     const existCaissier = await this.caissierRepository.findOne({ where:{id: id} });
     if (!existCaissier) {
       throw new HttpException({
@@ -240,11 +252,15 @@ export class AuthService {
         throw new UnauthorizedException('Code OTP incorrect ou expiré');
     }
 
-    const payload = { caissierId: existCaissier.id, role: existCaissier.role };
+    const tokens = this.getTokens(existCaissier.id, existCaissier.telephone, existCaissier.role);
+    const accessToken = (await tokens).accessToken;
+    const refreshToken = (await tokens).refreshToken;
+    const hashedRefreshToken = await this.hashData(refreshToken);
+    existCaissier.refreshToken = hashedRefreshToken;
 
-    const token = this.jwtService.sign(payload);
+    await this.caissierRepository.save(existCaissier);
 
-    return { token, existCaissier };
+    return { accessToken, refreshToken, existCaissier };
   }
 
   async resetPassWordParticulier(telephone: string): Promise<any>{
@@ -459,6 +475,91 @@ export class AuthService {
         accessKeyId: process.env.accessKEY,
         secretAccessKey: process.env.secretAccessKey,
     });
+  }
+
+  async getTokens(userId: number, telephone: string, role: string) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.jwtService.signAsync(
+        {
+          sub: userId,
+          telephone,
+          role
+        },
+        {
+          secret: secretKey.secret,
+          expiresIn: '2h',
+        },
+      ),
+      this.jwtService.signAsync(
+        {
+          sub: userId,
+          telephone,
+          role
+        },
+        {
+          secret: secretKey.refresh_secret,
+          expiresIn: '7d',
+        },
+      ),
+    ]);
+
+    return {
+      accessToken,
+      refreshToken,
+    };
+  }
+
+  async updateRefreshTokenParticulier(userId: number, refreshToken: string) {
+    const hashedRefreshToken = await this.hashData(refreshToken);
+    const existParticulier = await this.particulierRepository.findOne({where: {id: userId}});
+    if (!existParticulier) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Cet entreprise n'existe pas",
+      }, HttpStatus.NOT_FOUND)
+    }
+    existParticulier.refreshToken = hashedRefreshToken;
+    await this.particulierRepository.save(existParticulier);
+  }
+
+  async updateRefreshTokenCaissier(userId: number, refreshToken: string) {
+    const hashedRefreshToken = await this.hashData(refreshToken);
+    const existCaissier = await this.caissierRepository.findOne({where: {id: userId}});
+    console.log('existCaissier',existCaissier);
+    if (!existCaissier) {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: "Cet agent n'existe pas",
+      }, HttpStatus.NOT_FOUND)
+    }
+    existCaissier.refreshToken = hashedRefreshToken;
+    await this.caissierRepository.save(existCaissier);
+    console.log(existCaissier.refreshToken);
+  }
+
+
+  async refreshTokensParticulier(userId: number) {
+    const existParticulier = await this.particulierRepository.findOne({where: {id: userId}});
+    if (!existParticulier || !existParticulier.refreshToken)
+      throw new ForbiddenException('Accès non authorisé !');
+    // const refreshTokenMatches = await argon2.verify(
+    //   existParticulier.refreshToken,
+    //   refreshToken,
+    // );
+    // if (!refreshTokenMatches) throw new ForbiddenException('Access Denied');
+    const tokens = await this.getTokens(existParticulier.id, existParticulier.telephone, existParticulier.role);
+    await this.updateRefreshTokenParticulier(existParticulier.id, tokens.refreshToken);
+    return tokens;
+  }
+
+  async refreshTokensCaissier(userId: number) {
+    const existCaissier = await this.caissierRepository.findOne({where: {id: userId}});
+    console.log(existCaissier);
+    if (!existCaissier)
+      throw new ForbiddenException('Accès non authorisé !');
+    const tokens = await this.getTokens(existCaissier.id, existCaissier.telephone, existCaissier.role);
+    await this.updateRefreshTokenCaissier(existCaissier.id, tokens.refreshToken);
+    return tokens;
   }
 
 }

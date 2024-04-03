@@ -8,6 +8,7 @@ import {
   Request,
   UploadedFile,
   UseInterceptors,
+  Req,
 } from '@nestjs/common';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { User } from 'src/entities/User.entity';
@@ -30,6 +31,8 @@ import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
 import { AgentGuard } from 'src/guards/agent.guard';
 import { OtpService } from 'src/services/otp.service';
+import { RefreshTokenGuard } from 'src/guards/refreshtoken.guard';
+import { RefreshtokenprticulierGuard } from 'src/guards/refreshtokenprticulier.guard';
 
 @ApiTags('Authentication for all users')
 @Controller('api/auth')
@@ -348,11 +351,12 @@ export class AuthController {
     },
     description: 'Connexion Client',
   })
-  async validateParticulierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; token: string; particulier: Particulier }> {
+  async validateParticulierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; accessToken: string; refreshToken: string; particulier: Particulier }> {
       const result = await this.userAuthService.verifyOtpParticulierAndLogin(body.id, body.codeOtp);
     return {
       message: 'Connexion Réussie',
-      token: result.token,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
       particulier: result.existParticulier
     };
   }
@@ -390,15 +394,33 @@ export class AuthController {
     },
     description: 'Connexion Client',
   })
-  async validateCaissierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; token: string; caissier: Caissier }> {
+  async validateCaissierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; accessToken: string; refreshToken: string; caissier: Caissier }> {
       const result = await this.userAuthService.verifyOtpCaissierAndLogin(body.id, body.codeOtp);
     return {
       message: 'Connexion Réussie',
-      token: result.token,
+      accessToken: result.accessToken,
+      refreshToken: result.refreshToken,
       caissier: result.existCaissier
     };
   }
 
+  @UseGuards(RefreshTokenGuard)
+  @ApiBearerAuth()
+  @Get('agent/token/refresh')
+  refreshTokensCaissier(@Request() request: { user: { sub: number } }) {
+    const userId = request['user'].sub;
+    console.log('id',userId);
+    return this.userAuthService.refreshTokensCaissier(userId);
+  }
+
+  @UseGuards(RefreshtokenprticulierGuard)
+  @ApiBearerAuth()
+  @Get('particulier/token/refresh')
+  refreshTokensParticulier(@Request() request: { user: { sub: number } }) {
+    const userId = request['user'].sub;
+    console.log('id',userId);
+    return this.userAuthService.refreshTokensParticulier(userId);
+  }
   
 
   @UseGuards(AuthGuard)

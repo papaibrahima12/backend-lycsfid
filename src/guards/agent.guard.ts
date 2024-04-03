@@ -21,13 +21,13 @@ export class AgentGuard implements CanActivate {
         throw new UnauthorizedException('Seuls les agents peuvent accéder à cette ressource');
       }
       console.log(payload);
-      if (payload.caissierId) {
-      request['userId'] = payload.caissierId;
+      if (payload.sub) {
+      request['userId'] = payload.sub;
     } else {
       throw new UnauthorizedException("Les informations sur l'entreprise sont introuvables");
     }
       request['user'] = payload;
-      console.log('test',request['user'].caissierId)
+      console.log('test',request['user'].sub)
     return true;
   }
 

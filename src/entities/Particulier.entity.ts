@@ -58,6 +58,9 @@ export class Particulier {
   @JoinColumn({ name: 'pointId' })
   soldePoints: PointParEntreprise[];
 
+  @Column({type:'text', nullable:true})
+  refreshToken: string;
+
   @Column({ default: false })
   verified: boolean;
 

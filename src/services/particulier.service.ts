@@ -62,8 +62,10 @@ export class ParticulierService {
 }
 
 async getPoints(clientId: number): Promise<PointParEntreprise[]> {
+  console.log('clientNumber: ' + clientId);
   try {
     const client = await this.particulierModel.findOne({ where: { id: clientId } });
+    console.log('client',client);
     if (!client) {
       throw new HttpException(
         {
@@ -73,7 +75,8 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
         HttpStatus.NOT_FOUND,
       );
     }
-    const points = await this.pointModel.find({ where: { client }, relations: ['entreprise'] });
+    const points = await this.pointModel.find({ where: { client: client }, relations: ['entreprise'] });
+    console.log('les points',points)
     return points;
   } catch (error) {
     this.logger.error(`Erreur lors de la récupération du solde de points : ${error.message}`);

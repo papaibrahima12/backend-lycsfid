@@ -54,6 +54,9 @@ export class Caissier {
   @JoinColumn({ name: 'entrepriseId' })
   entreprise: Entreprise;
 
+  @Column({type:'text', nullable:true})
+  refreshToken: string;
+
   @Column({ default: false })
   verified: boolean;
 

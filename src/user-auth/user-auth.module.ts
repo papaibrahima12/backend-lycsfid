@@ -32,7 +32,7 @@ import { OtpService } from 'src/services/otp.service';
     ]),
     JwtModule.register({
       secret: secretKey.secret,
-      signOptions: { expiresIn: '2h' },
+      signOptions: { expiresIn: '02h' },
     }),
   ],
   controllers: [AuthController],

@@ -1,35 +1,35 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+
+import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { Request } from 'express';
-import { secretKey } from '../config/config';
+import { secretKey } from 'src/config/config';
 
 @Injectable()
-export class ParticulierGuard implements CanActivate {
+export class RefreshtokenprticulierGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
-
+ 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
+    
     if (!token) {
-      throw new UnauthorizedException("Token invalide ou inexistant !");
+      throw new UnauthorizedException('Accès non authorisé ! ');
     }
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: secretKey.secret,
+        secret: secretKey.refresh_secret,
       });
-      if (payload.role !== 'client') {
-        throw new UnauthorizedException('Seuls les clients peuvent accéder à cette ressource');
+      console.log(payload);
+      if (payload.role == 'client') {
+        if (payload.sub) {
+         request['userId'] = payload.sub;
+         } else {
+         throw new UnauthorizedException("Les informations sur cet utilisateur sont introuvables");
+         }
       }
-      console.log('payload',payload);
-      if (payload.sub) {
-        request['userId'] = payload.sub;
-      } else {
-      throw new UnauthorizedException("Les informations sur le client sont introuvables");
-    }
+      else throw new UnauthorizedException('Vous ne pouvez accéder à cette ressource');
       request['user'] = payload;
-      console.log('test',request['user'])
-    return true;
+      return true;
     } catch (error) {
       if (error instanceof JsonWebTokenError && error.name === 'JsonWebTokenError') {
         throw new UnauthorizedException('Token invalide, verifiez le token !');
@@ -40,16 +40,9 @@ export class ParticulierGuard implements CanActivate {
       }
     }
   }
-
+ 
   private extractTokenFromHeader(request: { headers: { authorization?: string } }): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
-  }
-
-   private extractJWTFromCookie(req: Request): string | null {
-    if (req.cookies && req.cookies.token) {
-      return req.cookies.token;
-    }
-    return null;
   }
 }
