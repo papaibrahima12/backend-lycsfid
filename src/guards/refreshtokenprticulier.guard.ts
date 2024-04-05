@@ -1,13 +1,14 @@
-
 import { Injectable, CanActivate, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { secretKey } from 'src/config/config';
 
 @Injectable()
 export class RefreshtokenprticulierGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private configService: ConfigService) {}
  
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const refresh_secret = this.configService.get<string>('key.refresh');
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     
@@ -17,9 +18,8 @@ export class RefreshtokenprticulierGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: secretKey.refresh_secret,
+        secret: refresh_secret,
       });
-      console.log(payload);
       if (payload.role == 'client') {
         if (payload.sub) {
          request['userId'] = payload.sub;

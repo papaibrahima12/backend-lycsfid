@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { ParticulierModule } from './modules/particulier.module';
 import { EntrepriseModule } from './modules/entreprise.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { JwtService } from '@nestjs/jwt';
 
 
 @Module({
@@ -39,6 +40,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     AgentModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, JwtService],
 })
 export class AppModule { }

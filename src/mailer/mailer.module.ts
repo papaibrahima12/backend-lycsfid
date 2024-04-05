@@ -1,13 +1,17 @@
 import { MailerModule } from '@nestjs-modules/mailer';
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
-import { secretKey } from 'src/config/config';
 import { SendEmailService } from 'src/services/send-email.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import keyConfig from 'src/config/key.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      load: [keyConfig],
+    }),
     MailerModule.forRoot({
       transport: {
         host: 'smtp.gmail.com',
@@ -15,7 +19,7 @@ import { Entreprise } from 'src/entities/Entreprise.entity';
         secure: true, 
         auth: {
           user: 'ibousow311@gmail.com',
-          pass: 'mype xtcn zuen isie',
+          pass: process.env.mail_password,
         },
       },
       defaults: {
@@ -23,9 +27,13 @@ import { Entreprise } from 'src/entities/Entreprise.entity';
       },
     }),
      TypeOrmModule.forFeature([Entreprise]),
-    JwtModule.register({
-      secret: secretKey.secret,
-      signOptions: { expiresIn: '1h' }, 
+     JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('key.access'),
+        signOptions: { expiresIn: '02h' },
+      }),
+      inject: [ConfigService],
     }),
   ],
   providers: [SendEmailService],

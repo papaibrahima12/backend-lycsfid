@@ -4,12 +4,14 @@ import { AuthGuard } from '@nestjs/passport';
 import { Observable } from 'rxjs';
 import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken'; // Import JsonWebTokenError
 import { secretKey } from 'src/config/config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class RefreshTokenGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private configService: ConfigService) {}
  
    async canActivate(context: ExecutionContext): Promise<boolean> {
+     const refresh_secret = this.configService.get<string>('key.refresh');
      const request = context.switchToHttp().getRequest();
      const token = this.extractTokenFromHeader(request);
      
@@ -19,9 +21,8 @@ export class RefreshTokenGuard implements CanActivate {
 
      try {
        const payload = await this.jwtService.verifyAsync(token, {
-         secret: secretKey.refresh_secret,
+         secret: refresh_secret,
        });
-       console.log(payload);
        if (payload.role == 'caissier') {
          if (payload.sub) {
           request['userId'] = payload.sub;

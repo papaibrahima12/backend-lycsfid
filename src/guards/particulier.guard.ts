@@ -1,13 +1,15 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Request } from 'express';
-import { secretKey } from '../config/config';
+import { secretKey } from 'src/config/config';
 
 @Injectable()
 export class ParticulierGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const secret = this.configService.get<string>('key.access');
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
@@ -16,19 +18,17 @@ export class ParticulierGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: secretKey.secret,
+        secret: secret,
       });
       if (payload.role !== 'client') {
         throw new UnauthorizedException('Seuls les clients peuvent accéder à cette ressource');
       }
-      console.log('payload',payload);
       if (payload.sub) {
         request['userId'] = payload.sub;
       } else {
       throw new UnauthorizedException("Les informations sur le client sont introuvables");
     }
       request['user'] = payload;
-      console.log('test',request['user'])
     return true;
     } catch (error) {
       if (error instanceof JsonWebTokenError && error.name === 'JsonWebTokenError') {

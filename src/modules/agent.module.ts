@@ -1,9 +1,10 @@
 import { AgentController } from './../controllers/agent.controller';
 import { AgentService } from './../services/agent.service';
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { secretKey } from 'src/config/config';
+import keyConfig from 'src/config/key.config';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Historique } from 'src/entities/Historique.entity';
@@ -15,6 +16,9 @@ import { SendMessageServiceService } from 'src/services/sendmessageservice.servi
 
 @Module({
     imports: [
+        ConfigModule.forRoot({
+            load: [keyConfig],
+          }),
         TypeOrmModule.forFeature([
             Caissier,
             Program,
@@ -23,10 +27,14 @@ import { SendMessageServiceService } from 'src/services/sendmessageservice.servi
             PointParEntreprise,
             Historique
         ]),
-        JwtModule.register({
-            secret: secretKey.secret,
-            signOptions: { expiresIn: '2h' },
-        }),
+        JwtModule.registerAsync({
+            imports: [ConfigModule],
+            useFactory: async (configService: ConfigService) => ({
+              secret: configService.get<string>('key.access'),
+              signOptions: { expiresIn: '02h' },
+            }),
+            inject: [ConfigService],
+          }),
     ],
     controllers: [AgentController],
     providers: [AgentService, SendMessageServiceService, OtpService],

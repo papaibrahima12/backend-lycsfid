@@ -1,14 +1,16 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
 import { Observable } from 'rxjs';
-import { secretKey } from '../config/config';
 import { Request } from 'express';
+import { secretKey } from 'src/config/config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class CompanyGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const secret = this.configService.get<string>('key.access');
     const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
@@ -16,19 +18,17 @@ export class CompanyGuard implements CanActivate {
     }
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: secretKey.secret,
+        secret: secret,
       });
       if (payload.role !== 'entreprise') {
         throw new UnauthorizedException('Seuls les entreprises peuvent accéder à cette ressource');
       }
-      console.log(payload);
       if (payload.userId) {
       request['userId'] = payload.userId;
     } else {
       throw new UnauthorizedException("Les informations sur l'entreprise sont introuvables");
     }
       request['user'] = payload;
-      console.log('test',request['user'].userId)
     return true;
     } catch (error) {
       if (error instanceof JsonWebTokenError && error.name === 'JsonWebTokenError') {

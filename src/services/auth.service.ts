@@ -5,15 +5,18 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/User.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
-import { secretKey } from '../config/config';
+import { secretKey } from 'src/config/config';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Verification } from 'src/entities/Verification.entity';
 import { SendEmailService } from './send-email.service';
 import * as AWS from 'aws-sdk';
+import * as config from 'config';
 import * as argon2 from 'argon2';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from './sendmessageservice.service';
 import { OtpService } from './otp.service';
+import keyConfig from 'src/config/key.config';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +27,7 @@ export class AuthService {
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
                @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
                @InjectRepository(Caissier) private readonly caissierRepository: Repository<Caissier>,
+               private readonly configService: ConfigService,
               private jwtService: JwtService, private sendEmailService:SendEmailService,private otpService: OtpService, private sendMessService: SendMessageServiceService) {}
  
   async registerAdmin(email: string, adresse:string, password: string, new_password:string): Promise<{ message: string }> {
@@ -168,8 +172,9 @@ export class AuthService {
       if (user.verified == false){
           throw new UnauthorizedException("Votre compte n'est pas encore activé !");
       }
-      const payload = { userId: user.id, role:user.role };
-      const token = this.jwtService.sign(payload);
+      const secret = this.configService.get<string>('key.access');
+      const payload = { userId: user.id, role:user.role, user:user };
+      const token = this.jwtService.sign(payload, {secret} );
       return {token,user};
   }
 
@@ -478,6 +483,8 @@ export class AuthService {
   }
 
   async getTokens(userId: number, telephone: string, role: string) {
+    const acc_key = this.configService.get<string>('key.access');
+    const ref_key = this.configService.get<string>('key.refresh');
     const [accessToken, refreshToken] = await Promise.all([
       this.jwtService.signAsync(
         {
@@ -486,7 +493,7 @@ export class AuthService {
           role
         },
         {
-          secret: secretKey.secret,
+          secret: acc_key,
           expiresIn: '2h',
         },
       ),
@@ -497,7 +504,7 @@ export class AuthService {
           role
         },
         {
-          secret: secretKey.refresh_secret,
+          secret: ref_key,
           expiresIn: '7d',
         },
       ),

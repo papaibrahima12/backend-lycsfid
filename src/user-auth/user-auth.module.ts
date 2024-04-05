@@ -1,7 +1,7 @@
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
-import { secretKey } from 'src/config/config';
+import { JwtModule, JwtService } from '@nestjs/jwt';
+
 import { AuthController } from 'src/controllers/auth.controller';
 import { AuthService } from 'src/services/auth.service';
 import { VerificationService } from 'src/services/verification.service';
@@ -17,9 +17,14 @@ import { Bon } from 'src/entities/Bon.entity';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
 import { OtpService } from 'src/services/otp.service';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import keyConfig from 'src/config/key.config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      load: [keyConfig],
+    }),
     PassportModule,
     TypeOrmModule.forFeature([
       User,
@@ -30,12 +35,16 @@ import { OtpService } from 'src/services/otp.service';
       Campagne,
       Verification,
     ]),
-    JwtModule.register({
-      secret: secretKey.secret,
-      signOptions: { expiresIn: '02h' },
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        secret: configService.get<string>('key.access'),
+        signOptions: { expiresIn: '02h' },
+      }),
+      inject: [ConfigService],
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService,OtpService,VerificationService,SendMessageServiceService, Session, SendEmailService],
+  providers: [AuthService,OtpService,VerificationService,SendMessageServiceService, Session, SendEmailService, JwtService],
 })
 export class UserAuthModule {}
