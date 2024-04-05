@@ -1,34 +1,32 @@
-name: Fidelycs Deployment
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
+
+name: Fidelycs CI/CD
 
 on:
   push:
-    branches: [ master ]
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build docker_compose
-        run: docker-compose up -d --build
-      - name: Build application
-        run: docker-compose exec -T service yarn build
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Deploy application
-        env:
-          PRIVATE_KEY: ${{ secrets.AWS_PRIVATE_KEY }}
-          HOSTNAME : ${{ secrets.HOSTNAME }}
-          USERNAME : ${{ secrets.USERNAME }}
-        run: |
-          echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
-          ssh -o StrictHostKeyChecking=no -i private_key ${USERNAME}@${HOSTNAME} '
 
-          cd /<path to your cloned github repository on the server> &&
-          git checkout main &&
-          git fetch --all &&
-          git reset --hard origin/main &&
-          git pull origin main &&
-          docker-compose up -d --build
+    runs-on: self-hosted
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm install
+    - run: | 
+        touch .env
+        echo "${{secrets.PROD_ENV_FILE}}" > .env
+    - run: npm run build
