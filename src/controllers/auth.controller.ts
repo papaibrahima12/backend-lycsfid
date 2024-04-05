@@ -34,7 +34,7 @@ import { OtpService } from 'src/services/otp.service';
 import { RefreshTokenGuard } from 'src/guards/refreshtoken.guard';
 import { RefreshtokenprticulierGuard } from 'src/guards/refreshtokenprticulier.guard';
 
-@ApiTags('Authentication for all users(agent, particulier, entreprise')
+@ApiTags('Authentication for all users')
 @Controller('api/auth')
 export class AuthController {
   constructor(
