@@ -1,8 +1,6 @@
 import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JsonWebTokenError, JwtService, TokenExpiredError } from '@nestjs/jwt';
-import { Observable } from 'rxjs';
 import { Request } from 'express';
-import { secretKey } from 'src/config/config';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
