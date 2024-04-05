@@ -5,17 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/User.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
-import { secretKey } from 'src/config/config';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Verification } from 'src/entities/Verification.entity';
 import { SendEmailService } from './send-email.service';
 import * as AWS from 'aws-sdk';
-import * as config from 'config';
 import * as argon2 from 'argon2';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from './sendmessageservice.service';
 import { OtpService } from './otp.service';
-import keyConfig from 'src/config/key.config';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
