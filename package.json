@@ -33,6 +33,7 @@
     "@nestjs/typeorm": "^10.0.1",
     "@types/bcrypt": "^5.0.2",
     "@types/multer-gridfs-storage": "^4.0.8",
+    "argon": "^2.0.21",
     "argon2": "^0.40.1",
     "aws-sdk": "^2.1542.0",
     "axios": "^1.6.7",
