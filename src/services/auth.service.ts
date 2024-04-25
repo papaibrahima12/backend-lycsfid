@@ -75,7 +75,7 @@ export class AuthService {
  }
 
  async registerParticulier(telephone: string,birthDate: Date, adresse:string, password: string,new_password:string): Promise<{ message: string, particulier: Particulier}> {
-     const user = await this.particulierRepository.findOne({ where:{telephone:telephone }});
+     const user = await this.particulierRepository.findOne({ where:{telephone:telephone, verified:true }});
       if (user) {
         throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -311,6 +311,24 @@ export class AuthService {
       existParticulier.verificationCode = null;
       this.particulierRepository.save(existParticulier);
       return { message: "Mot de passe modifié avec succès!"};
+  }
+
+  async resendOtpToNotVerifiedUser(telephone: string): Promise<any>{
+    const existUser = await this.particulierRepository.findOne({ where:{telephone:telephone, verified:false }});
+      if (existUser) {
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'Ce numero existe déjà',
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+      if(telephone == "" || telephone == null){
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'le telephone est requis',
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+      await this.sendMessService.sendSMSOTP(telephone);
+      return { message: "Un sms vous a été envoyé, veuillez validez votre compte !"};
   }
 
 
