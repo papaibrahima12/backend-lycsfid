@@ -26,7 +26,7 @@ async function bootstrap() {
     .setDescription('')
     .setVersion('1.0')
     .addServer('http://localhost:3000/', 'Local environment')
-    .addServer('http://54.158.173.253/', 'Production')
+    .addServer('https://fidelycs-backend.duckdns.org/', 'Production')
     .addTag('Backend LycsFid')
     .addBearerAuth()
     .build();
