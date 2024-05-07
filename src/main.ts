@@ -22,7 +22,7 @@ async function bootstrap() {
   // app.use(passport.initialize())
   // app.use(passport.session())
   const options = new DocumentBuilder()
-    .setTitle('Api Production FIDELYCS')
+    .setTitle('Api Production FIDELYCS_Backend')
     .setDescription('')
     .setVersion('1.0')
     .addServer('http://localhost:3000/', 'Local environment')
