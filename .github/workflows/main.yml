@@ -34,4 +34,4 @@ jobs:
 
     steps:
     - name: Deploy with PM2
-      run: pm2 restart backendAllioV0
+      run: pm2 restart backendAllioV1
