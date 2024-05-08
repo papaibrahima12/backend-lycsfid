@@ -13,9 +13,9 @@ const app=firebase.initializeApp({
       }
     ),
   });
-firebase.messaging(app);
-const messagingTest =  getMessaging();
-const tokenFCM= getToken(messagingTest);
+// firebase.messaging(app);
+// const messagingTest =  getMessaging();
+// const tokenFCM= getToken(messagingTest);
 
 @Injectable()
 export class NotificationService {
@@ -23,7 +23,6 @@ export class NotificationService {
 
       async sendingNotificationOneUser() {
         const token = process.env.tokenFCM;
-        console.log('token',tokenFCM);
         const payload= {
           token: token,
           notification: {

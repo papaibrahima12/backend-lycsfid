@@ -31,7 +31,7 @@ export class Entreprise {
   @Column({type:'varchar', length:255, nullable:false})
   @ApiProperty({required:true})
   @MinLength(9,{message:"le numero de telephone doit etre au moins 9 chiffres"})
-  @MaxLength(12, {message:"le numero de telephone ne doit pas depasser 15 chiffres"})
+  @MaxLength(15, {message:"le numero de telephone ne doit pas depasser 15 chiffres"})
   telephone: string;
 
   @Column({type:'varchar',default:'entreprise'})
