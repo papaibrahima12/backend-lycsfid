@@ -25,7 +25,7 @@ jobs:
     - run: npm install
     - run: | 
         touch .env
-        cp /dev/stdin .env <<<"${{ secrets.PROD_ENV_FILE }}"
+        cp "${{ secrets.PROD_ENV_FILE }}" .env
         # echo "${{secrets.PROD_ENV_FILE}}" > .env
         cat .env
     - run: npm run build
