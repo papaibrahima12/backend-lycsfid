@@ -1,33 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import * as firebase from 'firebase-admin';
 import * as admin from 'firebase-admin';
-import { getMessaging, getToken } from "firebase/messaging";
+import path from 'path';
 
 
-const app=firebase.initializeApp({
-    credential: firebase.credential.cert(
-      {
-        "projectId": "lycs-fid-customer",
-        "clientEmail": process.env.clientFirebaseEmail,
-        "privateKey": process.env.privateFirebaseKey
-      }
-    ),
-  });
+// firebase.initializeApp({
+//     credential: firebase.credential.cert(
+//       {
+//         "projectId": "lycs-fid-customer",
+//         "clientEmail": process.env.clientFirebaseEmail,
+//         "privateKey": process.env.privateFirebaseKey
+//       }
+//     ),
+//   });
 // firebase.messaging(app);
 // const messagingTest =  getMessaging();
 // const tokenFCM= getToken(messagingTest);
+
+const serviceAccount = require('../../src/firebase-adminsdk.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+}, 'test');
 
 @Injectable()
 export class NotificationService {
     constructor() {}
 
-      async sendingNotificationOneUser() {
+      async sendingNotificationOneUser(title:string, description:string) {
         const token = process.env.tokenFCM;
         const payload= {
           token: token,
           notification: {
-            title: "Attribution de points",
-            body: "vous venez de gagner 100 points de fidelités !"
+            title: title,
+            body: description
           }
           }
         return admin.messaging().send(payload).then((res)=>{

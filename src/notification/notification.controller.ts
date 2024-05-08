@@ -8,16 +8,17 @@ export class NotificationController {
     private readonly sendingNotificationService: NotificationService,
   ) {}
 
-  @Get("send-notification/")
-  // @ApiBody({
-  //   schema: {
-  //     type: "object",
-  //     properties: {
-  //       token: { type: "string" },
-  //     },
-  //   },
-  // })
-  async sendNotification() {
-    return await this.sendingNotificationService.sendingNotificationOneUser();
+  @Post("send-notification/")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        description: { type: "string" },
+      },
+    },
+  })
+  async sendNotification(@Body() body: { title: string; description: string },) {
+    return await this.sendingNotificationService.sendingNotificationOneUser(body.title, body.description);
   }
 }

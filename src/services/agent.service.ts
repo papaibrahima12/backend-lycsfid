@@ -7,6 +7,7 @@ import { Entreprise } from "src/entities/Entreprise.entity";
 import { Particulier } from "src/entities/Particulier.entity";
 import { Program } from "src/entities/Program.entity";
 import { Historique } from "src/entities/Historique.entity";
+import { NotificationService } from "src/notification/notification.service";
 
 @Injectable()
 export class AgentService {
@@ -21,6 +22,7 @@ export class AgentService {
     @InjectRepository(Historique)
     private historiqueModel: Repository<Historique>,
     @InjectRepository(Program) private programModel: Repository<Program>,
+    private readonly sendingNotificationService: NotificationService
   ) {}
 
   async attributePoints(
@@ -104,7 +106,6 @@ export class AgentService {
         caissier: caissier,
       },
     });
-    console.log("Client verif", clientPoints);
     if (!clientPoints) {
       const newClientPoint = new PointParEntreprise();
       newClientPoint.nombrePoints = equiPoint;
@@ -124,6 +125,10 @@ export class AgentService {
         dateTransaction: todayDateTime,
       });
       await this.historiqueModel.save(historique);
+      await this.sendingNotificationService.sendingNotificationOneUser(
+        "Attribution Reussie",
+        "Vous venez de gagner "+ equiPoint + " points de fidelités !"
+      );
     } else {
       clientPoints.nombrePoints += equiPoint;
       clientPoints.client = particulier;
@@ -145,7 +150,10 @@ export class AgentService {
         dateTransaction: todayDateTime,
       });
       await this.historiqueModel.save(historique);
-      console.log("Solde Points existant", particulier.soldePoints);
+      await this.sendingNotificationService.sendingNotificationOneUser(
+        "Attribution Reussie",
+        "Vous venez de gagner "+ equiPoint + " points de fidelités !"
+      );    
     }
     return {
       message:
@@ -267,6 +275,10 @@ export class AgentService {
     });
     await this.historiqueModel.save(historique);
     particulier.soldePoints = [pointClient];
+    await this.sendingNotificationService.sendingNotificationOneUser(
+      "Consommation points",
+      "Vous avez utilisé "+ equiPoint + " points de fidelités!"
+    ); 
     return {
       message: "vous avez utilisé " + equiPoint + " point(s) de votre solde",
     };
