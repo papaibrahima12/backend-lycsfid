@@ -21,7 +21,7 @@ const serviceAccount = require('../../src/firebase-adminsdk.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
-}, 'test');
+});
 
 @Injectable()
 export class NotificationService {
@@ -36,6 +36,7 @@ export class NotificationService {
             body: description
           }
           }
+          console.log('payload', payload);
         return admin.messaging().send(payload).then((res)=>{
           return {
               success:true

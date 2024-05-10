@@ -237,7 +237,7 @@ export class AuthService {
     if (!passwordMatch) {
       throw new UnauthorizedException('Mot de passe incorrect');
     }
-    await this.sendMessService.sendSMSOTP(telephone);
+    this.sendMessService.sendSMSOTP(telephone);
     return {message:'Un code OTP vous a été envoyé par SMS !', caissier: caissier};
 }
 
