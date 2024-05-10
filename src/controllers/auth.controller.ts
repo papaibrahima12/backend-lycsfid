@@ -514,11 +514,25 @@ export class AuthController {
         telephone: { type: "string" },
       },
     },
-    description: "Reinitialisation Mot de passe",
   })
   async resendSMSOtp(@Body() body: { telephone: string }) {
     const { telephone } = body;
     await this.userAuthService.resendOtpToNotVerifiedUser(telephone);
+    return { message: "Un code de 6 chiffres vous a ete envoyé par sms !" };
+  }
+
+  @Post("agent/resendOtp")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        id: { type: "number" },
+      },
+    },
+  })
+  async resendSMSOtpToAgent(@Body() body: { id: number }) {
+    const { id } = body;
+    await this.userAuthService.resendOtpCodeToAgent(id);
     return { message: "Un code de 6 chiffres vous a ete envoyé par sms !" };
   }
 

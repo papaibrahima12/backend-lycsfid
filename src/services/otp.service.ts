@@ -9,7 +9,7 @@ export class OtpService {
     return otp;
   }
 
-  storeOtp(phoneNumber: string, otp: string, expiresInMinutes: number = 2): void {
+  storeOtp(phoneNumber: string, otp: string, expiresInMinutes: number = 4): void {
     const expiresAt = Date.now() + expiresInMinutes * 60 * 1000;
     this.otpMap.set(phoneNumber, { otp, expiresAt });
     console.log('map: ', this.otpMap);
@@ -36,7 +36,6 @@ export class OtpService {
 
   verifyOtp(phoneNumber: string, enteredOtp: string): boolean {
     const storedOtpData = this.otpMap.get(phoneNumber);
-
     if (!storedOtpData || storedOtpData.expiresAt < Date.now()) {
         return false;
     }

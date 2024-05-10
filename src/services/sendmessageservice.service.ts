@@ -41,7 +41,7 @@ export class SendMessageServiceService {
             const otp = this.otpService.generateOtp();
             this.otpService.storeOtp(receiver, otp);
 
-            const message = `Votre code OTP est : ${otp}.Il est valide pendant 1 minutes.`;
+            const message = `Votre code OTP est : ${otp}.Il est valide pendant 3 minutes.`;
 
             const token = await this.generateToken();
 
