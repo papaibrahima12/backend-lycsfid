@@ -24,10 +24,12 @@ export class ParticulierGuard implements CanActivate {
       }
       if (payload.sub) {
         request['userId'] = payload.sub;
+        console.log('Request', request['userId']);
       } else {
       throw new UnauthorizedException("Les informations sur le client sont introuvables");
     }
-      request['user'] = payload;
+      request['userId'] = payload;
+      console.log('Request User Id',request['userId']);
     return true;
     } catch (error) {
       if (error instanceof JsonWebTokenError && error.name === 'JsonWebTokenError') {
