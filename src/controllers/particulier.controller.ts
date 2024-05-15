@@ -75,8 +75,8 @@ export class ParticulierController {
     description: "Limite d'éléments par page",
     required: false,
   })
-  async getPoints(@Request() request: { user: { particulierId: number }}): Promise<PointParEntreprise[]> {
-    const userId = request['user'].particulierId;
+  async getPoints(@Request() request: { userId: { sub: number }}): Promise<PointParEntreprise[]> {
+    const userId = request['userId'].sub;
     console.log('userId', userId);
     return this.particulierService.getPoints(userId);
   }
@@ -90,8 +90,8 @@ export class ParticulierController {
     description: "Limite d'éléments par page",
     required: false,
   })
-  async getHistoriques(@Request() request: { user: { particulierId: number }}): Promise<Historique[]> {
-    const userId = request['user'].particulierId;
+  async getHistoriques(@Request() request: { userId: { sub: number }}): Promise<Historique[]> {
+    const userId = request['userId'].sub;
     console.log('userId', userId);
     return this.particulierService.getHistoriques(userId);
   }

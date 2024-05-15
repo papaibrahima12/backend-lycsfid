@@ -3,7 +3,7 @@
 /node_modules
 src/config/config.ts
 
-
+firebase-adminsdk.json
 # env
 .env
 # configuration

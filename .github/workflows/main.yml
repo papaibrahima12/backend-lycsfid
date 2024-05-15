@@ -1,7 +1,4 @@
-# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-nodejs
-
-name: Fidelycs CI/CD PIPELINE
+name: FIDELYCS CI/CD PIPELINE
 
 on:
   push:
@@ -17,7 +14,7 @@ jobs:
     strategy:
       matrix:
         node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
@@ -28,6 +25,15 @@ jobs:
     - run: npm install
     - run: | 
         touch .env
-        echo "${{secrets.PROD_ENV_FILE}}" > .env
+        cp "${{ secrets.PROD_ENV_FILE }}" .env
+        # echo "${{secrets.PROD_ENV_FILE}}" > .env
+        cat .env
     - run: npm run build
-    - run: pm2 restart backendAllioV10
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+
+    steps:
+    - name: Deploy with PM2
+      run: pm2 start dist/main.js --name "backendAllioV0"

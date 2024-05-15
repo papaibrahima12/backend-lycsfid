@@ -75,7 +75,7 @@ export class AuthService {
  }
 
  async registerParticulier(telephone: string,birthDate: Date, adresse:string, password: string,new_password:string): Promise<{ message: string, particulier: Particulier}> {
-     const user = await this.particulierRepository.findOne({ where:{telephone:telephone }});
+     const user = await this.particulierRepository.findOne({ where:{telephone:telephone, verified:true }});
       if (user) {
         throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -204,7 +204,7 @@ export class AuthService {
   }
 
   async verifyOtpParticulierAndLogin(id: number, enteredOtp: string): Promise<{ accessToken: string, refreshToken:string, existParticulier: Particulier }>{
-    const existParticulier = await this.particulierRepository.findOne({ where:{id: id} });
+    const existParticulier = await this.particulierRepository.findOne({ where:{id: id, verified: true} });
     if (!existParticulier) {
       throw new HttpException({
         status: HttpStatus.NOT_FOUND,
@@ -237,7 +237,7 @@ export class AuthService {
     if (!passwordMatch) {
       throw new UnauthorizedException('Mot de passe incorrect');
     }
-    await this.sendMessService.sendSMSOTP(telephone);
+    this.sendMessService.sendSMSOTP(telephone);
     return {message:'Un code OTP vous a été envoyé par SMS !', caissier: caissier};
 }
 
@@ -259,7 +259,7 @@ export class AuthService {
     const refreshToken = (await tokens).refreshToken;
     const hashedRefreshToken = await this.hashData(refreshToken);
     existCaissier.refreshToken = hashedRefreshToken;
-
+    existCaissier.verified == true;
     await this.caissierRepository.save(existCaissier);
 
     return { accessToken, refreshToken, existCaissier };
@@ -311,6 +311,37 @@ export class AuthService {
       existParticulier.verificationCode = null;
       this.particulierRepository.save(existParticulier);
       return { message: "Mot de passe modifié avec succès!"};
+  }
+
+  async resendOtpToNotVerifiedUser(telephone: string): Promise<any>{
+    const existUser = await this.particulierRepository.findOne({ where:{telephone:telephone }});
+      if (!existUser) {
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: "Cet utilisateur n'existe pas !",
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+      if(telephone == "" || telephone == null){
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'le telephone est requis',
+        }, HttpStatus.UNPROCESSABLE_ENTITY)
+      }
+      await this.sendMessService.sendSMSOTP(telephone);
+      return { message: "Un sms vous a été envoyé, veuillez validez votre compte !"};
+  }
+
+  async resendOtpCodeToAgent(id: number){
+    const agent = await this.caissierRepository.findOne({where: {id: id}});
+    if (! agent){
+      throw new HttpException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        error: "Cet utilisateur n'existe pas !",
+      }, HttpStatus.UNPROCESSABLE_ENTITY)
+    }
+    const tel = agent.telephone;
+    this.sendMessService.sendSMSOTP(tel);
+    return { message: "Un sms vous a été renvoyé, veuillez validez votre compte !"};
   }
 
 

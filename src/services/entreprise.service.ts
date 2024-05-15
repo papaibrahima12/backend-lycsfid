@@ -41,7 +41,7 @@ export class EntrepriseService {
 
       const hash = await bcrypt.hash(caissierData.password, 10);
       const hashedPassword = await bcrypt.hash(caissierData.password, hash);
-      const newCompanyAccount = await this.caissierModel.save({
+      const newCaissierAccount = await this.caissierModel.save({
         prenom: caissierData.prenom,
         nom: caissierData.nom,
         email: caissierData.email,
@@ -58,7 +58,7 @@ export class EntrepriseService {
       //    type: 'Creating New Account',
       //  });
     //  await this.sendEmailService.sendWelcomeEmail(email);
-   return { message: "Création de compte réussie réussie !", newCompanyAccount};
+   return { message: "Création de compte réussie réussie !", newCaissierAccount};
 }
 
     async createMecanisme(mecanismeData: Mecanisme, userId: number) : Promise<{message:string, mecanisme:Mecanisme}> {

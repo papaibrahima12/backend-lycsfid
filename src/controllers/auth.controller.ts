@@ -8,34 +8,32 @@ import {
   Request,
   UploadedFile,
   UseInterceptors,
-  Req,
-} from '@nestjs/common';
-import { Particulier } from 'src/entities/Particulier.entity';
-import { User } from 'src/entities/User.entity';
-import { Verification } from 'src/entities/Verification.entity';
-import { Entreprise } from 'src/entities/Entreprise.entity';
-import { AuthGuard } from 'src/guards/auth/auth.guard';
-import { AuthService } from 'src/services/auth.service';
-import { SendEmailService } from 'src/services/send-email.service';
-import { VerificationService } from 'src/services/verification.service';
+} from "@nestjs/common";
+import { Particulier } from "src/entities/Particulier.entity";
+import { User } from "src/entities/User.entity";
+import { Verification } from "src/entities/Verification.entity";
+import { Entreprise } from "src/entities/Entreprise.entity";
+import { AuthGuard } from "src/guards/auth/auth.guard";
+import { AuthService } from "src/services/auth.service";
+import { SendEmailService } from "src/services/send-email.service";
+import { VerificationService } from "src/services/verification.service";
 import {
   ApiTags,
   ApiOperation,
   ApiBody,
   ApiBearerAuth,
   ApiConsumes,
-} from '@nestjs/swagger';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { CompanyGuard } from 'src/guards/company.guard';
-import { Caissier } from 'src/entities/Caissier.entity';
-import { SendMessageServiceService } from 'src/services/sendmessageservice.service';
-import { AgentGuard } from 'src/guards/agent.guard';
-import { OtpService } from 'src/services/otp.service';
-import { RefreshTokenGuard } from 'src/guards/refreshtoken.guard';
-import { RefreshtokenprticulierGuard } from 'src/guards/refreshtokenprticulier.guard';
+} from "@nestjs/swagger";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { CompanyGuard } from "src/guards/company.guard";
+import { Caissier } from "src/entities/Caissier.entity";
+import { SendMessageServiceService } from "src/services/sendmessageservice.service";
+import { OtpService } from "src/services/otp.service";
+import { RefreshTokenGuard } from "src/guards/refreshtoken.guard";
+import { RefreshtokenprticulierGuard } from "src/guards/refreshtokenprticulier.guard";
 
-@ApiTags('Authentication for all users')
-@Controller('api/auth')
+@ApiTags("Authentication for all users")
+@Controller("api/auth")
 export class AuthController {
   constructor(
     private readonly userAuthService: AuthService,
@@ -45,37 +43,37 @@ export class AuthController {
     private readonly otpService: OtpService,
   ) {}
 
-  @Post('admin/register')
-  @ApiOperation({ summary: 'Inscription Administrateur' })
+  @Post("admin/register")
+  @ApiOperation({ summary: "Inscription Administrateur" })
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
+        email: { type: "string" },
         adresse: {
-          type: 'enum',
+          type: "enum",
           enum: [
-            'Dakar',
-            'Thies',
-            'Diourbel',
-            'Fatick',
-            'Kaffrine',
-            'Kaolack',
-            'Kedougou',
-            'Kolda',
-            'Louga',
-            'Matam',
-            'Saint-Louis',
-            'Sedhiou',
-            'Tambacounda',
-            'Ziguinchor',
+            "Dakar",
+            "Thies",
+            "Diourbel",
+            "Fatick",
+            "Kaffrine",
+            "Kaolack",
+            "Kedougou",
+            "Kolda",
+            "Louga",
+            "Matam",
+            "Saint-Louis",
+            "Sedhiou",
+            "Tambacounda",
+            "Ziguinchor",
           ],
         },
-        password: { type: 'string' },
-        new_password: { type: 'string' },
+        password: { type: "string" },
+        new_password: { type: "string" },
       },
     },
-    description: 'Inscription Administrateur',
+    description: "Inscription Administrateur",
   })
   async registerAdmin(
     @Body()
@@ -93,41 +91,41 @@ export class AuthController {
       password,
       new_password,
     );
-    return { message: 'Insciption reussie' };
+    return { message: "Insciption reussie" };
   }
 
-  @Post('company/register')
+  @Post("company/register")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
-        telephone: { type: 'string' },
+        email: { type: "string" },
+        telephone: { type: "string" },
         adresse: {
-          type: 'enum',
+          type: "enum",
           enum: [
-            'Dakar',
-            'Thies',
-            'Diourbel',
-            'Fatick',
-            'Kaffrine',
-            'Kaolack',
-            'Kedougou',
-            'Kolda',
-            'Louga',
-            'Matam',
-            'Saint-Louis',
-            'Sedhiou',
-            'Tambacounda',
-            'Ziguinchor',
+            "Dakar",
+            "Thies",
+            "Diourbel",
+            "Fatick",
+            "Kaffrine",
+            "Kaolack",
+            "Kedougou",
+            "Kolda",
+            "Louga",
+            "Matam",
+            "Saint-Louis",
+            "Sedhiou",
+            "Tambacounda",
+            "Ziguinchor",
           ],
         },
-        ninea: { type: 'string' },
-        password: { type: 'string' },
-        new_password: { type: 'string' },
+        ninea: { type: "string" },
+        password: { type: "string" },
+        new_password: { type: "string" },
       },
     },
-    description: 'Inscription Entreprise',
+    description: "Inscription Entreprise",
   })
   async registerCompany(
     @Body() companyInfo: Entreprise,
@@ -142,81 +140,86 @@ export class AuthController {
     );
     return {
       message:
-        'Inscription reussie, vous recevrez un email dès que le compte sera activé !',
+        "Inscription reussie, vous recevrez un email dès que le compte sera activé !",
     };
   }
 
-  @Post('particulier/register')
+  @Post("particulier/register")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        telephone: { type: 'string' },
-        birthDate: { type: 'string', format: 'date' },
+        telephone: { type: "string" },
+        birthDate: { type: "string", format: "date" },
         adresse: {
-          type: 'enum',
+          type: "enum",
           enum: [
-            'Dakar',
-            'Thies',
-            'Diourbel',
-            'Fatick',
-            'Kaffrine',
-            'Kaolack',
-            'Kedougou',
-            'Kolda',
-            'Louga',
-            'Matam',
-            'Saint-Louis',
-            'Sedhiou',
-            'Tambacounda',
-            'Ziguinchor',
+            "Dakar",
+            "Thies",
+            "Diourbel",
+            "Fatick",
+            "Kaffrine",
+            "Kaolack",
+            "Kedougou",
+            "Kolda",
+            "Louga",
+            "Matam",
+            "Saint-Louis",
+            "Sedhiou",
+            "Tambacounda",
+            "Ziguinchor",
           ],
         },
-        password: { type: 'string' },
-        new_password: { type: 'string' },
+        password: { type: "string" },
+        new_password: { type: "string" },
       },
     },
-    description: 'Inscription Client',
+    description: "Inscription Client",
   })
   async registerClient(
     @Body() clientInfo: Particulier,
-  ): Promise<{ message: string, particulier: Particulier }> {
-   const result = await this.userAuthService.registerParticulier(
+  ): Promise<{ message: string; particulier: Particulier }> {
+    const result = await this.userAuthService.registerParticulier(
       clientInfo.telephone,
       clientInfo.birthDate,
       clientInfo.adresse,
       clientInfo.password,
       clientInfo.new_password,
     );
-    return { message: result.message, particulier: result.particulier};
+    return { message: result.message, particulier: result.particulier };
   }
 
-  @Post('particulier/validateRegister')
+  @Post("particulier/validateRegister")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        id: { type: 'number' },
-        codeOtp: { type: 'string' },
+        id: { type: "number" },
+        codeOtp: { type: "string" },
       },
     },
-    description: 'Validation Client',
+    description: "Validation Client",
   })
-  async validateClientAndRegiseter(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string, particulier: Particulier }> {
-   const result = await this.userAuthService.verifyOtpParticulierAndRegister(body.id, body.codeOtp);
-    return { message: result.message, particulier: result.particulier};
+  async validateClientAndRegiseter(
+    @Body() body: { id: number; codeOtp: string },
+  ): Promise<{ message: string; particulier: Particulier }> {
+    const result = await this.userAuthService.verifyOtpParticulierAndRegister(
+      body.id,
+      body.codeOtp,
+    );
+    return { message: result.message, particulier: result.particulier };
   }
 
-  @Post('admin/login')
+  @Post("admin/login")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
-        password: { type: 'string' },
+        email: { type: "string" },
+        password: { type: "string" },
       },
     },
-    description: 'Connexion Admin',
+    description: "Connexion Admin",
   })
   async loginAdmin(
     @Body() body: { email: string; password: string },
@@ -231,22 +234,22 @@ export class AuthController {
     //   })
     //   .send({ message: 'Connexion Réussie', user:result.user  });
     return {
-      message: 'Connexion Réussie',
+      message: "Connexion Réussie",
       token: result.token,
       user: result.user,
     };
   }
 
-  @Post('company/login')
+  @Post("company/login")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
-        password: { type: 'string' },
+        email: { type: "string" },
+        password: { type: "string" },
       },
     },
-    description: 'Connexion Entreprise',
+    description: "Connexion Entreprise",
   })
   async loginCompany(
     @Body() body: { email: string; password: string },
@@ -261,34 +264,35 @@ export class AuthController {
     //   })
     //   .send({ message: 'Connexion Réussie', user:result.user  });
     return {
-      message: 'Connexion Réussie',
+      message: "Connexion Réussie",
       token: result.token,
       user: result.user,
     };
   }
 
-  @Post('company/profile/change')
-  @UseInterceptors(FileInterceptor('imageProfil'))
-  @ApiConsumes('multipart/form-data')
+  @Post("company/profile/change")
+  @UseInterceptors(FileInterceptor("imageProfil"))
+  @ApiConsumes("multipart/form-data")
   @UseGuards(CompanyGuard)
   @ApiBearerAuth()
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        prenom: { type: 'string' },
-        nom: { type: 'string' },
-        telephone: { type: 'string' },
+        prenom: { type: "string" },
+        nom: { type: "string" },
+        telephone: { type: "string" },
         adresse: {
-          type: 'string'},
-        sousGroupe: { type: 'string' },
+          type: "string",
+        },
+        sousGroupe: { type: "string" },
         imageProfil: {
-          type: 'string',
-          format: 'binary',
+          type: "string",
+          format: "binary",
         },
       },
     },
-    description: 'Changement de profil',
+    description: "Changement de profil",
   })
   async changeProfilEntreprise(
     @Body()
@@ -302,7 +306,7 @@ export class AuthController {
     @UploadedFile() file: Express.Multer.File,
     @Request() request: { user: { userId: number } },
   ): Promise<{ message: string }> {
-    const userId = request['user'].userId;
+    const userId = request["user"].userId;
     await this.userAuthService.changeProfileCompany(
       userId,
       companyInfo.prenom,
@@ -312,19 +316,19 @@ export class AuthController {
       companyInfo.adresse,
       file,
     );
-    return { message: 'Modification Profil réussie ! ' };
+    return { message: "Modification Profil réussie ! " };
   }
 
-  @Post('particulier/login')
+  @Post("particulier/login")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        telephone: { type: 'string' },
-        password: { type: 'string' },
+        telephone: { type: "string" },
+        password: { type: "string" },
       },
     },
-    description: 'Connexion Client',
+    description: "Connexion Client",
   })
   async loginParticulier(
     @Body() body: { telephone: string; password: string },
@@ -340,106 +344,125 @@ export class AuthController {
     };
   }
 
-  @Post('particulier/validateLogin')
+  @Post("particulier/validateLogin")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        id: { type: 'number' },
-        codeOtp: { type: 'string' },
+        id: { type: "number" },
+        codeOtp: { type: "string" },
       },
     },
-    description: 'Connexion Client',
+    description: "Connexion Client",
   })
-  async validateParticulierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; accessToken: string; refreshToken: string; particulier: Particulier }> {
-      const result = await this.userAuthService.verifyOtpParticulierAndLogin(body.id, body.codeOtp);
+  async validateParticulierAndPass(
+    @Body() body: { id: number; codeOtp: string },
+  ): Promise<{
+    message: string;
+    accessToken: string;
+    refreshToken: string;
+    particulier: Particulier;
+  }> {
+    const result = await this.userAuthService.verifyOtpParticulierAndLogin(
+      body.id,
+      body.codeOtp,
+    );
     return {
-      message: 'Connexion Réussie',
+      message: "Connexion Réussie",
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
-      particulier: result.existParticulier
+      particulier: result.existParticulier,
     };
   }
 
-  @Post('agent/login')
+  @Post("agent/login")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        telephone: { type: 'string' },
-        password: { type: 'string' },
+        telephone: { type: "string" },
+        password: { type: "string" },
       },
     },
-    description: 'Connexion Client',
+    description: "Connexion Client",
   })
   async loginCaissier(
     @Body() body: { telephone: string; password: string },
-  ): Promise<{message: string; caissier: Caissier }> {
+  ): Promise<{ message: string; caissier: Caissier }> {
     const { telephone, password } = body;
     const result = await this.userAuthService.loginCaissier(
       telephone,
       password,
     );
-    return {message: 'Connexion Réussie', caissier: result.caissier};
+    return { message: "Connexion Réussie", caissier: result.caissier };
   }
 
-  @Post('agent/validateLogin')
+  @Post("agent/validateLogin")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        id: { type: 'number' },
-        codeOtp: { type: 'string' },
+        id: { type: "number" },
+        codeOtp: { type: "string" },
       },
     },
-    description: 'Connexion Client',
+    description: "Connexion Client",
   })
-  async validateCaissierAndPass(@Body() body: {id: number, codeOtp: string }): Promise<{ message: string; accessToken: string; refreshToken: string; caissier: Caissier }> {
-      const result = await this.userAuthService.verifyOtpCaissierAndLogin(body.id, body.codeOtp);
+  async validateCaissierAndPass(
+    @Body() body: { id: number; codeOtp: string },
+  ): Promise<{
+    message: string;
+    accessToken: string;
+    refreshToken: string;
+    caissier: Caissier;
+  }> {
+    const result = await this.userAuthService.verifyOtpCaissierAndLogin(
+      body.id,
+      body.codeOtp,
+    );
     return {
-      message: 'Connexion Réussie',
+      message: "Connexion Réussie",
       accessToken: result.accessToken,
       refreshToken: result.refreshToken,
-      caissier: result.existCaissier
+      caissier: result.existCaissier,
     };
   }
 
   @UseGuards(RefreshTokenGuard)
   @ApiBearerAuth()
-  @Get('agent/token/refresh')
+  @Get("agent/token/refresh")
   refreshTokensCaissier(@Request() request: { user: { sub: number } }) {
-    const userId = request['user'].sub;
-    console.log('id',userId);
+    const userId = request["user"].sub;
+    console.log("id", userId);
     return this.userAuthService.refreshTokensCaissier(userId);
   }
 
   @UseGuards(RefreshtokenprticulierGuard)
   @ApiBearerAuth()
-  @Get('particulier/token/refresh')
+  @Get("particulier/token/refresh")
   refreshTokensParticulier(@Request() request: { user: { sub: number } }) {
-    const userId = request['user'].sub;
-    console.log('id',userId);
+    const userId = request["user"].sub;
+    console.log("id", userId);
     return this.userAuthService.refreshTokensParticulier(userId);
   }
-  
 
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
-  @Get('admin/verifyCompany/:id')
-  async verifyCompanyAccount(@Param('id') id: number) {
+  @Get("admin/verifyCompany/:id")
+  async verifyCompanyAccount(@Param("id") id: number) {
     const result = await this.verificationService.verifyCompanyAccount(id);
     return result;
   }
 
-  @Post('admin/reVerifyCompany/')
+  @Post("admin/reVerifyCompany/")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
+        email: { type: "string" },
       },
     },
-    description: 'Reverification Entreprise',
+    description: "Reverification Entreprise",
   })
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
@@ -449,54 +472,81 @@ export class AuthController {
     return result;
   }
 
-  @Post('company/resetPassword')
+  @Post("company/resetPassword")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        email: { type: 'string' },
+        email: { type: "string" },
       },
     },
-    description: 'Reinitialisation Mot de passe',
+    description: "Reinitialisation Mot de passe",
   })
   async sendResetPasswordEmail(
     @Body() body: { email: string },
   ): Promise<{ message: string }> {
     const { email } = body;
     await this.emailService.sendResetPasswordEmail(email);
-    return { message: 'Un email vous a été envoyé avec succès !' };
+    return { message: "Un email vous a été envoyé avec succès !" };
   }
 
-  @Post('particulier/resetPassword')
+  @Post("particulier/resetPassword")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        telephone: { type: 'string' },
+        telephone: { type: "string" },
       },
     },
-    description: 'Reinitialisation Mot de passe',
+    description: "Reinitialisation Mot de passe",
   })
-  async sendSMSPasswordReset(
-    @Body() body: { telephone: string },
-  ) {
+  async sendSMSPasswordReset(@Body() body: { telephone: string }) {
     const { telephone } = body;
     await this.userAuthService.resetPassWordParticulier(telephone);
-    return { message: 'Un code de 6 chiffres vous a ete envoyé par sms !'};
+    return { message: "Un code de 6 chiffres vous a ete envoyé par sms !" };
   }
 
-  
-  @Post('particulier/password/reset')
+  @Post("particulier/resendOtp")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        verificationCode: { type: 'string' },
-        new_password: { type: 'string' },
-        new_password_conf: { type: 'string' },
+        telephone: { type: "string" },
       },
     },
-    description: 'Changement du mot de passe',
+  })
+  async resendSMSOtp(@Body() body: { telephone: string }) {
+    const { telephone } = body;
+    await this.userAuthService.resendOtpToNotVerifiedUser(telephone);
+    return { message: "Un code de 6 chiffres vous a ete envoyé par sms !" };
+  }
+
+  @Post("agent/resendOtp")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        id: { type: "number" },
+      },
+    },
+  })
+  async resendSMSOtpToAgent(@Body() body: { id: number }) {
+    const { id } = body;
+    await this.userAuthService.resendOtpCodeToAgent(id);
+    return { message: "Un code de 6 chiffres vous a ete envoyé par sms !" };
+  }
+
+  @Post("particulier/password/reset")
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        verificationCode: { type: "string" },
+        new_password: { type: "string" },
+        new_password_conf: { type: "string" },
+      },
+    },
+    description: "Changement du mot de passe",
   })
   async changePasswordParticulier(
     @Body()
@@ -512,20 +562,20 @@ export class AuthController {
       new_password,
       new_password_conf,
     );
-    return { message: 'Mot de passe changé avec succès !' };
+    return { message: "Mot de passe changé avec succès !" };
   }
 
-  @Post('company/password/reset')
+  @Post("company/password/reset")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        verificationCode: { type: 'string' },
-        new_password: { type: 'string' },
-        new_password_conf: { type: 'string' },
+        verificationCode: { type: "string" },
+        new_password: { type: "string" },
+        new_password_conf: { type: "string" },
       },
     },
-    description: 'Changement du mot de passe',
+    description: "Changement du mot de passe",
   })
   async changePassword(
     @Body()
@@ -541,55 +591,55 @@ export class AuthController {
       new_password,
       new_password_conf,
     );
-    return { message: 'Mot de passe changé avec succès !' };
+    return { message: "Mot de passe changé avec succès !" };
   }
 
-  @Get('company/profile')
+  @Get("company/profile")
   @UseGuards(CompanyGuard)
   @ApiBearerAuth()
   async getProfileCompany(
     @Request() request: { user: { userId: number } },
   ): Promise<Entreprise> {
-    const userId = request['user'].userId;
+    const userId = request["user"].userId;
     return this.userAuthService.getProfilCompany(userId);
   }
 
-  @Get('users')
+  @Get("users")
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async getUsers(): Promise<User[]> {
     return this.userAuthService.getUsers();
   }
 
-  @Get('particuliers')
+  @Get("particuliers")
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async getParticuliers(): Promise<Particulier[]> {
     return this.userAuthService.getClients();
   }
 
-  @Get('companies')
+  @Get("companies")
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async getEntreprises(): Promise<Entreprise[]> {
     return this.userAuthService.getEntreprises();
   }
 
-  @Post('agent/otp')
+  @Post("agent/otp")
   @ApiBody({
     schema: {
-      type: 'object',
+      type: "object",
       properties: {
-        telephone: { type: 'string' },
+        telephone: { type: "string" },
       },
     },
-    description: 'verification code',
+    description: "verification code",
   })
-  async getOTPs(@Body() body: {telephone: string}) {
+  async getOTPs(@Body() body: { telephone: string }) {
     return this.otpService.getOtp(body.telephone);
   }
 
-  @Get('admin/verifications')
+  @Get("admin/verifications")
   @UseGuards(AuthGuard)
   @ApiBearerAuth()
   async getVerifications(): Promise<Verification[]> {
