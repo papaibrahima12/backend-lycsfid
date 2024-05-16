@@ -388,11 +388,12 @@ export class AuthService {
         error: "Cet entreprise n'existe pas",
       }, HttpStatus.NOT_FOUND)
     }
-
-    if (file) {
-      console.log(file);
-      const uploadedImage = await this.upload(file);
-      existEntreprise.imageProfil = uploadedImage;
+      if(!file){
+        existEntreprise.imageProfil = 'default.png';
+      }else{
+        const uploadedImage = await this.upload(file);
+        existEntreprise.imageProfil = uploadedImage;
+      }
       existEntreprise.prenom = prenom;
       existEntreprise.nom = nom;
       existEntreprise.telephone = telephone;
@@ -400,12 +401,12 @@ export class AuthService {
       existEntreprise.sousGroupe = sousGroupe;
     await this.entrepriseRepository.save(existEntreprise);
     return {message: 'Profil modifié avec succès !'};
-  }else{
-        throw new HttpException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          error: 'Vous devez charger une image',
-        }, HttpStatus.UNPROCESSABLE_ENTITY)
-    }
+  // }else{
+  //       throw new HttpException({
+  //         status: HttpStatus.UNPROCESSABLE_ENTITY,
+  //         error: 'Vous devez charger une image',
+  //       }, HttpStatus.UNPROCESSABLE_ENTITY)
+  //   }
 
   }
 
@@ -487,7 +488,7 @@ export class AuthService {
   }
 
   async upload(file): Promise<string> {
-    const { originalname } = file;
+    const { originalname } = file ;
     const bucketS3 = 'lycsalliofiles';
     return this.uploadS3(file.buffer, bucketS3, originalname);
 }
@@ -500,7 +501,6 @@ export class AuthService {
         acl: 'private',
         Body: file,
     };
-    console.log(params);
     return new Promise((resolve, reject) => {
         s3.upload(params, (err, data) => {
         if (err) {

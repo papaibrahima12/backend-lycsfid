@@ -35,12 +35,13 @@ export class NotificationService {
       async sendingNotificationOneUser(title:string, description:string, token:string ) {
         const client = await this.particulierRepository.findOne({where: {deviceId: token}})
         const payload= {
-          token: client.deviceId,
+          token: token,
           notification: {
             title: title,
             body: description
           }
           }
+          console.log('payload',payload);
         return admin.messaging().send(payload).then((res)=>{
           return {
               success:true

@@ -20,6 +20,6 @@ export class NotificationController {
     },
   })
   async sendNotification(@Body() body: {token: string, title: string; description: string },) {
-    return await this.sendingNotificationService.sendingNotificationOneUser(body.token, body.title, body.description);
+    return await this.sendingNotificationService.sendingNotificationOneUser(body.title, body.description, body.token,);
   }
 }
