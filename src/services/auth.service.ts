@@ -389,7 +389,7 @@ export class AuthService {
       }, HttpStatus.NOT_FOUND)
     }
       if(!file){
-        existEntreprise.imageProfil = 'default.png';
+        existEntreprise.imageProfil = existEntreprise.imageProfil;
       }else{
         const uploadedImage = await this.upload(file);
         existEntreprise.imageProfil = uploadedImage;
@@ -399,7 +399,7 @@ export class AuthService {
       existEntreprise.telephone = telephone;
       existEntreprise.adresse = adresse;
       existEntreprise.sousGroupe = sousGroupe;
-    await this.entrepriseRepository.save(existEntreprise);
+    await this.entrepriseRepository.update(id, existEntreprise);
     return {message: 'Profil modifié avec succès !'};
   // }else{
   //       throw new HttpException({

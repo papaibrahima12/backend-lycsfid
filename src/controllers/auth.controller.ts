@@ -8,6 +8,7 @@ import {
   Request,
   UploadedFile,
   UseInterceptors,
+  Put,
 } from "@nestjs/common";
 import { Particulier } from "src/entities/Particulier.entity";
 import { User } from "src/entities/User.entity";
@@ -270,7 +271,7 @@ export class AuthController {
     };
   }
 
-  @Post("company/profile/change")
+  @Put("company/profile/change")
   @UseInterceptors(FileInterceptor("imageProfil"))
   @ApiConsumes("multipart/form-data")
   @UseGuards(CompanyGuard)
@@ -316,7 +317,7 @@ export class AuthController {
       companyInfo.adresse,
       file,
     );
-    return { message: "Modification Profil réussie ! " };
+    return { message: "Modification du profil réussie ! " };
   }
 
   @Post("particulier/login")
