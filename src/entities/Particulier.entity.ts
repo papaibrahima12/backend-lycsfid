@@ -61,6 +61,9 @@ export class Particulier {
   @Column({type:'text', nullable:true})
   refreshToken: string;
 
+  @Column({type:'text', nullable:true})
+  deviceId: string;
+
   @Column({ default: false })
   verified: boolean;
 

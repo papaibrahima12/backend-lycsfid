@@ -1,4 +1,4 @@
-import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus, NotAcceptableException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException, HttpException, HttpStatus, NotAcceptableException, ForbiddenException, UnprocessableEntityException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +14,7 @@ import { Caissier } from 'src/entities/Caissier.entity';
 import { SendMessageServiceService } from './sendmessageservice.service';
 import { OtpService } from './otp.service';
 import { ConfigService } from '@nestjs/config';
+import { HttpStatusCode } from 'axios';
 
 @Injectable()
 export class AuthService {
@@ -187,7 +188,7 @@ export class AuthService {
         return null;
   }
 
-  async loginParticulier(telephone: string, password: string): Promise<any> {
+  async loginParticulier(telephone: string, password: string, deviceId: string): Promise<any> {
       const user = await this.particulierRepository.findOne({ where:{telephone: telephone} });
       if (!user) {
         throw new HttpException({
@@ -195,11 +196,19 @@ export class AuthService {
           error: "Compte inexistant ou non vérifié, veuillez vous inscrire svp !",
         }, HttpStatus.NOT_FOUND)
       }
+      if(deviceId == null  || deviceId == '') {
+        throw new UnprocessableEntityException({
+          status: HttpStatusCode.UnprocessableEntity,
+          error: "le device Id est requis !",
+        }, "Le device est requis")
+        }
       const passwordMatch = await bcrypt.compare(password, user.password);
       if (!passwordMatch) {
         throw new UnauthorizedException('Mot de passe incorrect');
       }
       await this.sendMessService.sendSMSOTP(telephone);
+      user.deviceId = deviceId;
+      await this.particulierRepository.save(user);
     return {message:'Un code de validation vous a été envoyé par SMS, Veuillez le saisir !', particulier: user};
   }
 

@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as firebase from 'firebase-admin';
 import * as admin from 'firebase-admin';
 import path from 'path';
+import { Particulier } from 'src/entities/Particulier.entity';
+import { Repository } from 'typeorm';
 
 
 // firebase.initializeApp({
@@ -25,18 +28,19 @@ admin.initializeApp({
 
 @Injectable()
 export class NotificationService {
-    constructor() {}
+    constructor(
+      @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
+    ) {}
 
-      async sendingNotificationOneUser(title:string, description:string) {
-        const token = process.env.tokenFCM;
+      async sendingNotificationOneUser(title:string, description:string, token:string ) {
+        const client = await this.particulierRepository.findOne({where: {deviceId: token}})
         const payload= {
-          token: token,
+          token: client.deviceId,
           notification: {
             title: title,
             body: description
           }
           }
-          console.log('payload', payload);
         return admin.messaging().send(payload).then((res)=>{
           return {
               success:true

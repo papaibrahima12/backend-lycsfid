@@ -128,6 +128,7 @@ export class AgentService {
       });
       await this.historiqueModel.save(historique);
       await this.sendingNotificationService.sendingNotificationOneUser(
+        particulier.deviceId,
         "Attribution Reussie",
         "Vous venez de gagner "+ equiPoint + " points de fidelités !"
       );
@@ -153,6 +154,7 @@ export class AgentService {
       });
       await this.historiqueModel.save(historique);
       await this.sendingNotificationService.sendingNotificationOneUser(
+        particulier.deviceId,
         "Attribution Reussie",
         "Vous venez de gagner "+ equiPoint + " points de fidelités !"
       );    
@@ -278,6 +280,7 @@ export class AgentService {
     await this.historiqueModel.save(historique);
     particulier.soldePoints = [pointClient];
     await this.sendingNotificationService.sendingNotificationOneUser(
+      particulier.deviceId,
       "Consommation points",
       "Vous avez utilisé "+ equiPoint + " points de fidelités!"
     ); 

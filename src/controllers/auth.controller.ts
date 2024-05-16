@@ -326,17 +326,19 @@ export class AuthController {
       properties: {
         telephone: { type: "string" },
         password: { type: "string" },
+        deviceId: { type: "string" },
       },
     },
     description: "Connexion Client",
   })
   async loginParticulier(
-    @Body() body: { telephone: string; password: string },
+    @Body() body: { telephone: string; password: string; deviceId: string},
   ): Promise<{ message: string; user: Particulier }> {
-    const { telephone, password } = body;
+    const { telephone, password, deviceId } = body;
     const result = await this.userAuthService.loginParticulier(
       telephone,
       password,
+      deviceId
     );
     return {
       message: result.message,

@@ -13,12 +13,13 @@ export class NotificationController {
     schema: {
       type: "object",
       properties: {
+        token: { type: "string" },
         title: { type: "string" },
-        description: { type: "string" },
+        description: { type: "string" }
       },
     },
   })
-  async sendNotification(@Body() body: { title: string; description: string },) {
-    return await this.sendingNotificationService.sendingNotificationOneUser(body.title, body.description);
+  async sendNotification(@Body() body: {token: string, title: string; description: string },) {
+    return await this.sendingNotificationService.sendingNotificationOneUser(body.token, body.title, body.description);
   }
 }
