@@ -65,9 +65,9 @@ export class BonService {
 
   Object.assign(existingBon, bonData);
 
-  const majBon = await this.bonModel.save(existingBon);
+  await this.bonModel.update(id,existingBon);
 
-  return { message: 'Bon modifié avec succès !', bon: majBon };
+  return { message: 'Bon modifié avec succès !', bon: existingBon };
 }
 
 async deleteBon(id: number): Promise<{ message: string }> {

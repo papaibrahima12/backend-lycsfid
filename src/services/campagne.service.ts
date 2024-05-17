@@ -79,8 +79,8 @@ export class CampagneService {
     }
     Object.assign(existingCampagne, campagneData);
 
-    const majCampagne = await this.campagneModel.save(existingCampagne);
-    return { message: 'Campagne modifié avec succès !', campagne : majCampagne}
+    await this.campagneModel.update(id, existingCampagne);
+    return { message: 'Campagne modifié avec succès !', campagne : existingCampagne}
   }
 
   async deleteCampagne(id: number): Promise<{message:string}> {
