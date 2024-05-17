@@ -84,7 +84,7 @@ export class ParticulierController {
   
   @Get('particulier/historiques/all')
   @ApiBearerAuth()
-  @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
+  @ApiQuery({ name: 'page', description: 'Numéro de page', required: true })
   @ApiQuery({
     name: 'limit',
     description: "Limite d'éléments par page",
