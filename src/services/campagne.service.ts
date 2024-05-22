@@ -4,13 +4,21 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { LessThanOrEqual, Repository } from 'typeorm';
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { Bon } from 'src/entities/Bon.entity';
+import { Particulier } from 'src/entities/Particulier.entity';
+import { NotificationService } from 'src/notification/notification.service';
 
 
 @Injectable()
 export class CampagneService {
     private readonly logger = new Logger(CampagneService.name);
     constructor(@InjectRepository(Campagne) private campagneModel: Repository<Campagne>,
-        @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>
+                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
+                @InjectRepository(Bon) private bonModel: Repository<Bon>,
+                @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                private readonly sendingNotificationService: NotificationService
+                
     ){}
 
     async createCampagne(campagneData: Campagne,userId: number, file?: Express.Multer.File,): Promise<{message:string, campagne:Campagne}> {
@@ -40,6 +48,28 @@ export class CampagneService {
     }  
     campagneData.entreprise = entreprise;
       await this.campagneModel.save(campagneData);
+      const particuliers = await this.particulierModel.find({});
+      for (let existParticulier of particuliers) {
+        const currentDate = new Date();
+        const ageMilliseconds = currentDate.getTime() - new Date(existParticulier.birthDate).getTime();
+        const ageYears = ageMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
+        const sexe = existParticulier.sexe;
+        const campagnes = await this.campagneModel.find({where: {sexeCible: sexe, status: 'en cours', isActive: true }});
+        
+        if ( campagnes.length > 0 ){
+          const filteredCampagnes = campagnes.filter(campagne => {
+          const ageMatch = ageYears >= campagne.ageCibleMin && ageYears <= campagne.ageCibleMax;
+          return ageMatch;
+            });
+        if (filteredCampagnes.length > 0) {
+          await this.sendingNotificationService.sendingNotificationOneUser(
+            "Promotions spéciales",
+            "De nouvelles promotions sont disponibles !",
+            existParticulier.deviceId,
+          );
+          } 
+        }
+      }
       return {message : "Campagne crée avec succès", campagne:campagneData};
     }else{
         throw new HttpException({
@@ -80,7 +110,7 @@ export class CampagneService {
     Object.assign(existingCampagne, campagneData);
 
     await this.campagneModel.update(id, existingCampagne);
-    return { message: 'Campagne modifié avec succès !', campagne : existingCampagne}
+    return { message: 'Campagne modifiée avec succès !', campagne : existingCampagne}
   }
 
   async deleteCampagne(id: number): Promise<{message:string}> {
@@ -95,6 +125,33 @@ export class CampagneService {
 
     await this.campagneModel.remove(existingCampagne);
     return {message: 'Campagne supprimée avec succès !'}
+  }
+
+  @Cron(CronExpression.EVERY_10_MINUTES)
+  async updateStatusCampagne(){
+    const existCampagnes = await this.campagneModel.find({});
+    const currentDate = new Date().toISOString().slice(0,10);
+    if(existCampagnes){
+      for(let campagne of existCampagnes){
+        const campagneDateFin = new Date(campagne.dateFin).toISOString().slice(0,10);
+        console.log('Date fin camp : ',campagneDateFin)
+        console.log('Date now camp : ',currentDate)
+        if (campagneDateFin < currentDate) {
+          campagne.status = 'cloturé';
+          campagne.isActive = false;
+        }else {
+          campagne.status = 'en cours';
+          campagne.isActive = true;
+        }
+        await this.campagneModel.save(existCampagnes);
+        
+      }
+    }else {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: 'Campagnes introuvables',
+      }, HttpStatus.NOT_FOUND);
+    }
   }
 
      async upload(file): Promise<string> {

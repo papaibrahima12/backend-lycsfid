@@ -72,7 +72,7 @@ export class Bon {
         type: 'jsonb',
         array: false,
         default: () => "'[]'",
-        nullable: false,
+        nullable: true,
     })
   @ApiProperty({ isArray: true, example: ['Dakar', 'Thies', '...'] })
   localisation: Array<{name:string}>;

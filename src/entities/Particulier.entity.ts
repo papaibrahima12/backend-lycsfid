@@ -1,6 +1,7 @@
 import { IsEnum, IsNotEmpty, IsNumberString, Matches, MaxLength, MinLength } from "class-validator";
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { PointParEntreprise } from "./PointParEntreprise.entity";
+import { ApiProperty } from "@nestjs/swagger";
 
 @Entity()
 export class Particulier {
@@ -26,6 +27,11 @@ export class Particulier {
   @IsEnum(['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor'],{message: 'Veuillez selectionner une adresse valide' })
   @Column({type:'enum',enum:['Dakar', 'Thies', 'Diourbel','Fatick','Kaffrine','Kaolack','Kedougou','Kolda','Louga','Matam','Saint-Louis','Sedhiou','Tambacounda','Ziguinchor']})
   adresse: string;
+
+  @IsEnum(['Masculin', 'Feminin'],{message: 'Veuillez selectionner une sexe valide' })
+  @Column({type:'enum', enum:['Masculin','Feminin'], default: 'Masculin'})
+  @ApiProperty()
+  sexe: string;
 
   @IsNotEmpty({message: "Le numero de téléphone est requis !"})
   @IsNumberString()

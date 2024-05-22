@@ -21,23 +21,91 @@ export class ParticulierService {
                 @InjectRepository(Historique) private historiqueModel: Repository<Historique>,
                 ){}
       
-     async getBons(): Promise<Bon[]> {
+                async getBons(id: number): Promise<Bon[]> {
+                  try {
+                    const existParticulier = await this.particulierModel.findOne({ where: { id: id } });
+                    if (!existParticulier) {
+                      throw new Error('Compte inexistant, veuillez vous inscrire !');
+                    }
+                
+                    const currentDate = new Date();
+                    const ageMilliseconds = currentDate.getTime() - new Date(existParticulier.birthDate).getTime();
+                    const ageYears = ageMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
+                
+                    // const adresse = existParticulier.adresse;
+                    // console.log('addr part', adresse);
+                    const sexe = existParticulier.sexe;
+                    
+                    const bons = await this.bonModel.find({ where: { isActive: true, sexeCible: sexe } });
+                
+                    const filteredBons = bons.filter(bon => {
+                    const ageMatch = ageYears >= bon.ageCibleMin && ageYears <= bon.ageCibleMax;
+                    // const localisationArray: string[] = bon.localisation;
+                    // console.log('localisation', localisationArray);
+                    // if (!Array.isArray(localisationArray)) {
+                    //   console.error('Invalid localisation format');
+                    //   return false; // Skip this bon if localisation is not an array
+                    // }
+                    //   const locationMatch = localisationArray.filter(loc => loc.name === adresse);
+                    // Split localisation string into an array of locations
+                  // const localisationArray: string[] = bon.localisation.split(',');
+
+                  // Check if the adresse is in the localisation array
+                  // const locationMatch = localisationArray.includes(adresse)
+                  // console.log('loc',locationMatch);
+                      
+                      return ageMatch;
+                    });
+                
+                    return filteredBons;
+                  } catch (error) {
+                    console.error(error);
+                    this.logger.error(`Erreur lors de la recuperation des bons !: ${error.message}`);
+                    throw new Error('Erreur lors de la recuperation des bons !');
+                  }
+                }
+                
+
+  async getCampagnes(id: number): Promise<Campagne[]> {
       try {
-        const bons = await this.bonModel.find({where:{ isActive: true }});
-        return bons;
+        const existParticulier = await this.particulierModel.findOne({ where: { id: id } });
+        if (!existParticulier) {
+          throw new Error('Compte inexistant, veuillez vous inscrire !');
+        }
+
+        const currentDate = new Date();
+        const ageMilliseconds = currentDate.getTime() - new Date(existParticulier.birthDate).getTime();
+        const ageYears = ageMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
+    
+        // const adresse = existParticulier.adresse;
+        const sexe = existParticulier.sexe;
+        
+        const campagnes = await this.campagneModel.find({ where: { isActive: true, status: 'en cours', sexeCible: sexe } });
+        console.log('campagnes', campagnes);
+        const filteredcampagnes = campagnes.filter(campagne => {
+        const ageMatch = ageYears >= campagne.ageCibleMin && ageYears <= campagne.ageCibleMax;
+        // const localisationArray: string[] = bon.localisation;
+        // console.log('localisation', localisationArray);
+        // if (!Array.isArray(localisationArray)) {
+        //   console.error('Invalid localisation format');
+        //   return false; // Skip this bon if localisation is not an array
+        // }
+        //   const locationMatch = localisationArray.filter(loc => loc.name === adresse);
+        // Split localisation string into an array of locations
+      // const localisationArray: string[] = bon.localisation.split(',');
+
+      // Check if the adresse is in the localisation array
+      // const locationMatch = localisationArray.includes(adresse)
+      // console.log('loc',locationMatch);
+          
+          return ageMatch;
+        });
+    
+        return filteredcampagnes;
       } catch (error) {
+        console.error(error);
         this.logger.error(`Erreur lors de la recuperation des bons !: ${error.message}`);
         throw new Error('Erreur lors de la recuperation des bons !');
-      }
-  }
-
-  async getCampagnes(): Promise<Campagne[]> {
-      try {
-        const campagnes = await this.campagneModel.find({where:{status:'en cours'}});
-        return campagnes;
-      } catch (error) {
-        this.logger.error(`Erreur lors de la recuperation des campagnes !: ${error.message}`);
-        throw new Error('Erreur lors de la recuperation des campagnes !');
       }
   }
   

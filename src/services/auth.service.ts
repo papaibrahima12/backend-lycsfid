@@ -213,7 +213,7 @@ export class AuthService {
   }
 
   async verifyOtpParticulierAndLogin(id: number, enteredOtp: string): Promise<{ accessToken: string, refreshToken:string, existParticulier: Particulier }>{
-    const existParticulier = await this.particulierRepository.findOne({ where:{id: id, verified: true} });
+    const existParticulier = await this.particulierRepository.findOne({ where:{id: id} });
     if (!existParticulier) {
       throw new HttpException({
         status: HttpStatus.NOT_FOUND,
@@ -229,6 +229,7 @@ export class AuthService {
     existParticulier.refreshToken = (await tokens).refreshToken;
     const accessToken = (await tokens).accessToken;
     const refreshToken = (await tokens).refreshToken;
+    existParticulier.verified = true;
     await this.particulierRepository.save(existParticulier);
   
     return { accessToken, refreshToken, existParticulier };

@@ -1,15 +1,21 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as AWS from 'aws-sdk';
 import { Bon } from 'src/entities/Bon.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
+import { Particulier } from 'src/entities/Particulier.entity';
+import { NotificationService } from 'src/notification/notification.service';
 import {  LessThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
 export class BonService {
     private readonly logger = new Logger(BonService.name);
     constructor(@InjectRepository(Bon) private bonModel: Repository<Bon>,
-                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>
+                @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
+                @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                private readonly sendingNotificationService: NotificationService
+
     ){}
 
     async createBon(bonData: Bon, userId: number, file?: Express.Multer.File): Promise<{message:string, bon:Bon}> {
@@ -39,7 +45,30 @@ export class BonService {
           }
           bonData.entreprise = entreprise;
           await this.bonModel.save(bonData);
-      return {message : "Bon crée avec succès", bon:bonData};
+
+          const particuliers = await this.particulierModel.find({});
+          for (let existParticulier of particuliers) {
+            const currentDate = new Date();
+            const ageMilliseconds = currentDate.getTime() - new Date(existParticulier.birthDate).getTime();
+            const ageYears = ageMilliseconds / (1000 * 60 * 60 * 24 * 365.25);
+            const sexe = existParticulier.sexe;
+            const bons = await this.bonModel.find({where: {sexeCible: sexe, isActive: true }});
+            
+            if ( bons.length > 0 ){
+              const filteredBons = bons.filter(bon => {
+              const ageMatch = ageYears >= bon.ageCibleMin && ageYears <= bon.ageCibleMax;
+              return ageMatch;
+                });
+            if (filteredBons.length > 0) {
+              await this.sendingNotificationService.sendingNotificationOneUser(
+                "Promotions spéciales",
+                "Vous venez de gagner de nouveaux bons de réductions !",
+                existParticulier.deviceId,
+              );
+            } 
+          }
+        }
+        return {message : "Bon crée avec succès", bon:bonData};
     }else{
         throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -83,6 +112,31 @@ async deleteBon(id: number): Promise<{ message: string }> {
   await this.bonModel.remove(existingBon);
   return { message: 'Bon supprimé avec succès !' };
 }
+
+@Cron(CronExpression.EVERY_10_MINUTES)
+  async updateStatusBon(){
+    const existBons = await this.bonModel.find({});
+    const currentDate = new Date().toISOString().slice(0,10);
+    console.log('currentDate', currentDate);
+    if(existBons){
+      for(let bon of existBons){
+        const bonDateFin = new Date(bon.dateFin).toISOString().slice(0,10);
+        if (bonDateFin < currentDate) {
+          bon.status = 'cloturé';
+          bon.isActive = false;
+        }else {
+          bon.status = 'non-consommé';
+          bon.isActive = true;
+        }
+        await this.bonModel.save(existBons);
+      }
+    }else {
+      throw new HttpException({
+        status: HttpStatus.NOT_FOUND,
+        error: 'Bons introuvables',
+      }, HttpStatus.NOT_FOUND);
+    }
+  }
 
 
   async upload(file): Promise<string> {

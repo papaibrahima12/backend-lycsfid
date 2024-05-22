@@ -24,8 +24,9 @@ export class ParticulierController {
     description: "Limite d'éléments par page",
     required: false,
   })
-  async getBons(): Promise<Bon[]> {
-    return this.particulierService.getBons();
+  async getBons(@Request() request: { userId: { sub: number }}): Promise<Bon[]> {
+    const userId = request['userId'].sub;
+    return this.particulierService.getBons(userId);
   }
 
   @Get('particulier/campagnes/all')
@@ -36,8 +37,9 @@ export class ParticulierController {
     description: "Limite d'éléments par page",
     required: false,
   })
-  async getCampagnes(): Promise<Campagne[]> {
-    return this.particulierService.getCampagnes();
+  async getCampagnes(@Request() request: { userId: { sub: number }}): Promise<Campagne[]> {
+    const userId = request['userId'].sub;
+    return this.particulierService.getCampagnes(userId);
   }
 
 
