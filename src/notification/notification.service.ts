@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as firebase from 'firebase-admin';
 import * as admin from 'firebase-admin';
@@ -33,7 +33,13 @@ export class NotificationService {
     ) {}
 
       async sendingNotificationOneUser(title:string, description:string, token:string ) {
-        const client = await this.particulierRepository.findOne({where: {deviceId: token}})
+        const client = await this.particulierRepository.findOne({where: {deviceId: token}});
+        if (!client) {
+          throw new HttpException({
+            status: HttpStatus.NOT_FOUND,
+            error: 'Client non trouvé',
+          }, HttpStatus.NOT_FOUND);
+        }
         const payload= {
           token: token,
           notification: {

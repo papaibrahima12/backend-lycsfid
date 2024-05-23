@@ -12,12 +12,14 @@ import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Program } from 'src/entities/Program.entity';
 import { EntrepriseService } from 'src/services/entreprise.service';
 import { Caissier } from 'src/entities/Caissier.entity';
+import { Recompense } from 'src/entities/Recompense.entity';
+import { NotificationService } from 'src/notification/notification.service';
 
 @Module({
      imports: [
-    TypeOrmModule.forFeature([Entreprise,Particulier,Bon,Campagne,Mecanisme,Program, Caissier, Verification, PointParEntreprise]),
+    TypeOrmModule.forFeature([Entreprise,Particulier,Bon,Campagne,Mecanisme,Program, Caissier, Verification, PointParEntreprise, Recompense]),
   ],
   controllers: [EntrepriseController],
-  providers: [EntrepriseService, JwtService],
+  providers: [EntrepriseService, JwtService, NotificationService],
 })
 export class EntrepriseModule {}

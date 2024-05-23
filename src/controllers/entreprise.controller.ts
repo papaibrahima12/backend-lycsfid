@@ -2,6 +2,7 @@ import { Body, Controller, UseGuards, Request, Post, Put, Param, Delete, Get } f
 import { ApiBearerAuth, ApiBody, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { Program } from 'src/entities/Program.entity';
+import { Recompense } from 'src/entities/Recompense.entity';
 import { CompanyGuard } from 'src/guards/company.guard';
 import { EntrepriseService } from 'src/services/entreprise.service';
 
@@ -31,6 +32,24 @@ export class EntrepriseController {
     @Body() programData: Program,@Request() request: { user: { userId: number } }): Promise<any> {
     const userId = request['user'].userId;
     return this.entrepriseService.createProgramme(programData, userId);
+  }
+
+  @Post('company/recompense/add')
+    @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        nomRecompense: { type: 'string', nullable: false },
+        valeurEnPoints: { type: 'integer', nullable: false },
+        montant: { type: 'integer', nullable:false },
+        dureeValidite: { type: 'integer', nullable:false },
+      },
+      description: 'Données pour créer une récompense !',
+    },
+  })
+    async createRecompense(@Body() recompenseData: Recompense, @Request() request: { user: { userId: number } }): Promise<any> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.createRecompense(userId, recompenseData);
   }
 
   @Post('company/agent/add')
@@ -68,6 +87,19 @@ export class EntrepriseController {
     return this.entrepriseService.desactivateProgramme(id);
   }
 
+  @Get('company/recompense/activate/:id')
+  @ApiParam({ name: 'id', description: 'ID de la récompense à activer' })
+  async activateRecompense(@Param('id') id: number): Promise<any> {
+    return this.entrepriseService.activateRecompense(id);
+  }
+
+
+  @Get('company/recompense/desactivate/:id')
+  @ApiParam({ name: 'id', description: 'ID de la récompense à désactiver' })
+  async desactivateRecompense(@Param('id') id: number): Promise<any> {
+    return this.entrepriseService.desactivateRecompense(id);
+  }
+
   @Delete('company/program/delete/:id')
   @ApiParam({ name: 'id', description: 'ID du programme à supprimer' })
   async deleteProgram(@Param('id') id: number): Promise<any> {
@@ -87,10 +119,21 @@ export class EntrepriseController {
   }
 
   @Get('company/agents')
-  @UseGuards(CompanyGuard)
   @ApiBearerAuth()
   async getCaissiers(@Request() request: { user: { userId: number } },): Promise<Caissier[]> {
     const userId = request['user'].userId;
     return this.entrepriseService.getCaissiers(userId);
+  }
+
+  @Get('company/recompenses')
+   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
+   @ApiQuery({
+    name: 'limit',
+    description: "Limite d'éléments par page",
+    required: false,
+  })
+  async getRecompenses(@Request() request: { user: { userId: number } }): Promise<Recompense[]> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.getRecompenses(userId);
   }
 }

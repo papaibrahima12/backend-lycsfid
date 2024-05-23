@@ -4,7 +4,10 @@ import * as bcrypt from 'bcrypt';
 import { Caissier } from 'src/entities/Caissier.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Mecanisme } from 'src/entities/Mecanisme.entity';
+import { Particulier } from 'src/entities/Particulier.entity';
 import { Program } from 'src/entities/Program.entity';
+import { Recompense } from 'src/entities/Recompense.entity';
+import { NotificationService } from 'src/notification/notification.service';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -13,7 +16,11 @@ export class EntrepriseService {
     constructor(@InjectRepository(Mecanisme) private mecanismeModel: Repository<Mecanisme>,
                 @InjectRepository(Program) private programModel: Repository<Program>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
-                @InjectRepository(Caissier) private caissierModel: Repository<Caissier>
+                @InjectRepository(Caissier) private caissierModel: Repository<Caissier>,
+                @InjectRepository(Recompense) private recompenseModel: Repository<Recompense>,
+                @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                private readonly sendingNotificationService: NotificationService
+
     ){}
 
     async createAgent(caissierData: Caissier, userId:number){
@@ -217,14 +224,101 @@ export class EntrepriseService {
     }
   }
 
-  async getCaissiers(entrepriseId: number): Promise<Caissier[]> {
-    try {
-      const existEntreprise = await this.entrepriseModel.find({where: {id: entrepriseId}});
-      const caissiers = await this.caissierModel.find({where: {entreprise: existEntreprise}});
-      return caissiers;
-    } catch (error) {
-      this.logger.error(`Erreur lors du chargement des caissiers: ${error.message}`);
-      throw new Error('Erreur lors du chargement des caissiers');
+    async getCaissiers(entrepriseId: number): Promise<Caissier[]> {
+      try {
+        const existEntreprise = await this.entrepriseModel.find({where: {id: entrepriseId}});
+        const caissiers = await this.caissierModel.find({where: {entreprise: existEntreprise}});
+        return caissiers;
+      } catch (error) {
+        this.logger.error(`Erreur lors du chargement des caissiers: ${error.message}`);
+        throw new Error('Erreur lors du chargement des caissiers');
+      }
+    }
+
+    async createRecompense(id: number, recompenseData: Recompense): Promise<{message:string, recompense:Recompense}>{
+      const entreprise = await this.entrepriseModel.findOne({where:{id: id}});
+
+      if (!entreprise) {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Entreprise non trouvée',
+        }, HttpStatus.NOT_FOUND);
+      }
+      recompenseData.entreprise = entreprise;
+      const newRecompense = await this.recompenseModel.save(recompenseData)
+      const particuliers = await this.particulierModel.find({});
+          for (let existParticulier of particuliers) {
+            const recompenses = await this.recompenseModel.find({where: {statut: 'actif' }});
+           
+            if (recompenses.length > 0) {
+              await this.sendingNotificationService.sendingNotificationOneUser(
+                "Nouvelles Récompenses",
+                "Une nouvelle récompense est disponible 😊 !",
+                existParticulier.deviceId,
+              );
+            }
+        }
+      return {message: ' Récompense créee avec succès !', recompense: newRecompense}
+    }
+
+    async activateRecompense(id: number): Promise<{ message: string }> {
+      const existRecompense = await this.recompenseModel.findOne({where:{id:id}});
+
+      if (!existRecompense) {
+          throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Recompense introuvable',
+          }, HttpStatus.NOT_FOUND);
+      }
+      if(existRecompense.statut == 'actif') {
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'Récompense déja activée !',
+          }, HttpStatus.UNPROCESSABLE_ENTITY);
+      }
+      var today = new Date();
+      var DD = today.getDate();
+      var MM = today.getMonth();
+      var YYYY = today.getFullYear();
+      var hh = today.getHours();
+      var mm = today.getMinutes();
+      var ss = today.getSeconds();
+      var todayDateTime = new Date(YYYY, MM, DD, hh, mm, ss)
+      existRecompense.statut = 'actif';
+      existRecompense.dateActivation = todayDateTime;
+      await this.recompenseModel.save(existRecompense);
+      return { message: 'Récompense activé avec succès !' };
+    }
+
+    async desactivateRecompense(id: number): Promise<{ message: string }> {
+      const existRecompense = await this.recompenseModel.findOne({where:{id:id}});
+
+      if (!existRecompense) {
+          throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Récompense introuvable',
+          }, HttpStatus.NOT_FOUND);
+      }
+      if(existRecompense.statut == 'inactif') {
+        throw new HttpException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          error: 'Récompense déja désactivée !',
+          }, HttpStatus.UNPROCESSABLE_ENTITY);
+      }
+      existRecompense.statut = 'inactif';
+      await this.recompenseModel.update(id, existRecompense);
+      return { message: 'Récompense desactivée avec succès !' };
+    }
+
+    async getRecompenses(userId:number): Promise<Recompense[]> {
+      try {
+        const entreprise = await this.entrepriseModel.findOne({where:{id: userId}});
+        const recompenses = await this.recompenseModel.find({where:{entreprise:entreprise}});
+        return recompenses;
+      } catch (error) {
+        console.error(error);
+        this.logger.error(`Erreur lors de la récuperation des recompenses: ${error.message}`);
+        throw new Error('Erreur lors de la récuperation des recompenses');
     }
   }
 

@@ -128,9 +128,9 @@ export class AgentService {
       });
       await this.historiqueModel.save(historique);
       await this.sendingNotificationService.sendingNotificationOneUser(
-        "Attribution Reussie",
-        "Vous venez de gagner "+ equiPoint + " points de fidelités !",
-        particulier.deviceId,
+        "Accumulation de points",
+        "Félicitations " + particulier.prenom + " " + particulier.nom + " !" + " \n Vous avez gagné "+ equiPoint + " points de fidelités lors de votre récent achat chez "+entreprise.nomEntreprise,
+        particulier.deviceId
       );
     } else {
       clientPoints.nombrePoints += equiPoint;
@@ -154,10 +154,10 @@ export class AgentService {
       });
       await this.historiqueModel.save(historique);
       await this.sendingNotificationService.sendingNotificationOneUser(
-        "Attribution Reussie",
-        "Vous venez de gagner "+ equiPoint + " points de fidelités !",
+        "Accumulation de points",
+        "Félicitations " + particulier.prenom + " " + particulier.nom + " !" + " \n Vous avez gagné "+ equiPoint + " points de fidelités lors de votre récent achat chez "+entreprise.nomEntreprise,
         particulier.deviceId
-      );    
+      );   
     }
     return {
       message:
@@ -280,10 +280,12 @@ export class AgentService {
     await this.historiqueModel.save(historique);
     particulier.soldePoints = [pointClient];
     await this.sendingNotificationService.sendingNotificationOneUser(
-      "Consommation points",
-      "Vous avez utilisé "+ equiPoint + " points de fidelités!",
+      "Utilisation de points",
+      "Bonjour "+ particulier.prenom + " " + particulier.nom + " !"+
+      "\nVous avez utilisé "+ equiPoint + " points de fidelité lors de votre récent achat chez " + entreprise.nomEntreprise + ". Votre nouveau solde est de " + pointClient.nombrePoints
+       + " points !",
       particulier.deviceId
-    ); 
+    );
     return {
       message: "vous avez utilisé " + equiPoint + " point(s) de votre solde",
     };

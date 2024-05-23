@@ -10,12 +10,15 @@ import { Particulier } from 'src/entities/Particulier.entity';
 import { ParticulierService } from 'src/services/particulier.service';
 import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Historique } from 'src/entities/Historique.entity';
+import { Recompense } from 'src/entities/Recompense.entity';
+import { NotificationService } from 'src/notification/notification.service';
+import { RecompensePart } from 'src/entities/RecompensePart';
 
 @Module({
     imports: [
-    TypeOrmModule.forFeature([Entreprise, Particulier, Bon, Program, Campagne, Historique, PointParEntreprise]),
+    TypeOrmModule.forFeature([Entreprise, Particulier, Bon, Program, Campagne, Historique, RecompensePart, PointParEntreprise, Recompense]),
   ],
   controllers: [ParticulierController],
-  providers: [ParticulierService, JwtService],
+  providers: [ParticulierService, JwtService, NotificationService],
 })
 export class ParticulierModule {}

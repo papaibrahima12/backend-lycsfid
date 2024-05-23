@@ -7,6 +7,9 @@ import { Historique } from 'src/entities/Historique.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { PointParEntreprise } from 'src/entities/PointParEntreprise.entity';
 import { Program } from 'src/entities/Program.entity';
+import { Recompense } from 'src/entities/Recompense.entity';
+import { RecompensePart } from 'src/entities/RecompensePart';
+import { NotificationService } from 'src/notification/notification.service';
 import { Repository } from 'typeorm';
 
 @Injectable()
@@ -19,6 +22,9 @@ export class ParticulierService {
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
                 @InjectRepository(PointParEntreprise) private pointModel: Repository<PointParEntreprise>,   
                 @InjectRepository(Historique) private historiqueModel: Repository<Historique>,
+                @InjectRepository(Recompense) private recompenseModel: Repository<Recompense>,
+                @InjectRepository(RecompensePart) private recompensePartModel: Repository<RecompensePart>,
+                private readonly sendingNotificationService: NotificationService
                 ){}
       
                 async getBons(id: number): Promise<Bon[]> {
@@ -119,6 +125,17 @@ export class ParticulierService {
       }
   }
 
+  async getRecompenses(): Promise<Recompense[]> {
+    try {
+      const recompenses = await this.recompenseModel.find({where:{ statut: 'actif' }});
+      return recompenses;
+    } catch (error) {
+      console.error(error);
+      this.logger.error(`Erreur lors de la recuperation des recompenses !: ${error.message}`);
+      throw new Error('Erreur lors de la recuperation des recompenses !');
+    }
+}
+
   async getEntreprises(): Promise<Entreprise[]> {
     try {
       const entreprises = await this.entrepriseModel.find({});
@@ -130,10 +147,8 @@ export class ParticulierService {
 }
 
 async getPoints(clientId: number): Promise<PointParEntreprise[]> {
-  console.log('clientNumber: ' + clientId);
   try {
     const client = await this.particulierModel.findOne({ where: { id: clientId } });
-    console.log('client',client);
     if (!client) {
       throw new HttpException(
         {
@@ -144,7 +159,6 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
       );
     }
     const points = await this.pointModel.find({ where: { client: client }, relations: ['entreprise'] });
-    console.log('les points',points)
     return points;
   } catch (error) {
     this.logger.error(`Erreur lors de la récupération du solde de points : ${error.message}`);
@@ -171,4 +185,106 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
       throw new Error("Erreur lors de la récupération de l'historique !");
       }
     }
+
+
+
+
+    async convertPoints(clientId: number,  idRecompense: number):  Promise<{ message: string }>{
+      const particulier = await this.particulierModel.findOne({
+        where: { id: clientId },
+      });
+      if (!particulier) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: "Particulier non trouvé !",
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+  
+      const recompense = await this.recompenseModel.findOne({
+        where: { id: idRecompense, statut: 'actif' }, relations: ['entreprise']
+      });
+      if (!recompense) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: "Aucun récompense en cours, vérifiez vos récompenses !",
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      const entreprise = recompense.entreprise;
+      if (!entreprise) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: "Entreprise associée à la récompense introuvable !",
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const pointParticulier = await this.pointModel.findOne({ where: { client: particulier, entreprise: entreprise }, relations: ['entreprise'] });
+      console.log('entreprise', pointParticulier.entreprise);
+      if( recompense.valeurEnPoints > pointParticulier.nombrePoints || pointParticulier.nombrePoints == 0){
+        throw new HttpException(
+          {
+            status: HttpStatus.UNPROCESSABLE_ENTITY,
+            error: "Votre solde de points est insuffisant !",
+          },
+          HttpStatus.UNPROCESSABLE_ENTITY,
+        );
+      }else{
+        pointParticulier.nombrePoints -= recompense.valeurEnPoints;
+        await this.pointModel.save(pointParticulier);
+        const newRecompense = new RecompensePart();
+        newRecompense.nomRecompense = recompense.nomRecompense; 
+        newRecompense.nombrePoints = recompense.valeurEnPoints;
+        newRecompense.montant = recompense.montant;
+        newRecompense.isExpired = false;
+        const currentDate = new Date();
+        const expirationDate = new Date(currentDate);
+        expirationDate.setDate(currentDate.getDate() + recompense.dureeValidite);
+        newRecompense.dateExp = expirationDate;
+        newRecompense.client = particulier;
+        newRecompense.entreprise = entreprise;
+
+        await this.recompensePartModel.save(newRecompense);
+        await this.sendingNotificationService.sendingNotificationOneUser(
+          "Gain de recompense",
+          "Félicitations " + particulier.prenom + " " + particulier.nom + " !" + " \n Vous avez gagné 1 "+ recompense.nomRecompense + " chez "+entreprise.nomEntreprise +
+          ". Il est valide pendant " + recompense.dureeValidite + "jours"
+          ,
+          particulier.deviceId
+        );
+        return {
+          message:
+            "Conversion Réussie, vous avez converti " + recompense.valeurEnPoints + " point(s) de fidélité",
+        };
+      }
+
+
+    }
+
+    async getMesRecompenses(clientId: number): Promise<RecompensePart[]> {
+      try {
+        const client = await this.particulierModel.findOne({ where: { id: clientId } });
+        if (!client) {
+          throw new HttpException(
+            {
+              status: HttpStatus.NOT_FOUND,
+              error: 'Particulier non trouvé !',
+            },
+            HttpStatus.NOT_FOUND,
+          );
+        }
+        const mesRecompenses = await this.recompensePartModel.find({ where: { client: client, isExpired: false } });
+        return mesRecompenses;
+      } catch (error) {
+        this.logger.error(`Erreur lors de la récupération des recompenses : ${error.message}`);
+        throw new Error("Erreur lors de la récupération des recompenses !");
+        }
+      }
 }
