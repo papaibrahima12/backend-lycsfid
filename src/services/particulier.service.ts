@@ -1,4 +1,5 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Bon } from 'src/entities/Bon.entity';
 import { Campagne } from 'src/entities/Campagne.entity';
@@ -178,14 +179,37 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
           HttpStatus.NOT_FOUND,
         );
       }
-      const historiques = await this.historiqueModel.find({ where: { client: client } });
+      const historiques = await this.historiqueModel.find({ where: { client: client }, relations: ['entreprise'] });
       return historiques;
     } catch (error) {
+      console.error(error);
       this.logger.error(`Erreur lors de la récupération de l'historique : ${error.message}`);
       throw new Error("Erreur lors de la récupération de l'historique !");
       }
     }
 
+    @Cron(CronExpression.EVERY_10_MINUTES)
+    async updateStatusOfRecompense(){
+      const existRecompenses = await this.recompensePartModel.find({});
+      const currentDate = new Date().toISOString().slice(0,10);
+      console.log('currentDate', currentDate);
+      if(existRecompenses){
+        for(let recompense of existRecompenses){
+          const recompenseDateExp = new Date(recompense.dateExp).toISOString().slice(0,10);
+          if (recompenseDateExp < currentDate) {
+            recompense.isExpired = true;
+          }else {
+            recompense.isExpired = false;
+          }
+          await this.recompensePartModel.save(existRecompenses);
+        }
+      }else {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Récompenses introuvables',
+        }, HttpStatus.NOT_FOUND);
+      }
+    }
 
 
 
@@ -227,7 +251,6 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
         );
       }
       const pointParticulier = await this.pointModel.findOne({ where: { client: particulier, entreprise: entreprise }, relations: ['entreprise'] });
-      console.log('entreprise', pointParticulier.entreprise);
       if( recompense.valeurEnPoints > pointParticulier.nombrePoints || pointParticulier.nombrePoints == 0){
         throw new HttpException(
           {
@@ -283,8 +306,8 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
         const mesRecompenses = await this.recompensePartModel.find({ where: { client: client, isExpired: false } });
         return mesRecompenses;
       } catch (error) {
-        this.logger.error(`Erreur lors de la récupération des recompenses : ${error.message}`);
-        throw new Error("Erreur lors de la récupération des recompenses !");
+        this.logger.error(`Erreur lors de la récupération de vos recompenses : ${error.message}`);
+        throw new Error("Erreur lors de la récupération de vis recompenses !");
         }
       }
 }

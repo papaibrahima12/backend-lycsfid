@@ -261,33 +261,33 @@ export class EntrepriseService {
       return {message: ' Récompense créee avec succès !', recompense: newRecompense}
     }
 
-    async activateRecompense(id: number): Promise<{ message: string }> {
+    async changeStatusRecompense(id: number): Promise<{ message: string }> {
       const existRecompense = await this.recompenseModel.findOne({where:{id:id}});
 
       if (!existRecompense) {
           throw new HttpException({
           status: HttpStatus.NOT_FOUND,
-          error: 'Recompense introuvable',
+          error: 'Récompense introuvable',
           }, HttpStatus.NOT_FOUND);
       }
       if(existRecompense.statut == 'actif') {
-        throw new HttpException({
-          status: HttpStatus.UNPROCESSABLE_ENTITY,
-          error: 'Récompense déja activée !',
-          }, HttpStatus.UNPROCESSABLE_ENTITY);
+        existRecompense.dateActivation = todayDateTime;
+        existRecompense.statut = 'inactif';
+        await this.recompenseModel.save(existRecompense);
+      }else{
+        var today = new Date();
+        var DD = today.getDate();
+        var MM = today.getMonth();
+        var YYYY = today.getFullYear();
+        var hh = today.getHours();
+        var mm = today.getMinutes();
+        var ss = today.getSeconds();
+        var todayDateTime = new Date(YYYY, MM, DD, hh, mm, ss)
+        existRecompense.statut = 'actif';
+        existRecompense.dateActivation = todayDateTime;
+        await this.recompenseModel.save(existRecompense);
       }
-      var today = new Date();
-      var DD = today.getDate();
-      var MM = today.getMonth();
-      var YYYY = today.getFullYear();
-      var hh = today.getHours();
-      var mm = today.getMinutes();
-      var ss = today.getSeconds();
-      var todayDateTime = new Date(YYYY, MM, DD, hh, mm, ss)
-      existRecompense.statut = 'actif';
-      existRecompense.dateActivation = todayDateTime;
-      await this.recompenseModel.save(existRecompense);
-      return { message: 'Récompense activé avec succès !' };
+      return { message: 'Statut Récompense changée avec succès !' };
     }
 
     async desactivateRecompense(id: number): Promise<{ message: string }> {

@@ -18,7 +18,7 @@ import { ParticulierService } from 'src/services/particulier.service';
 export class ParticulierController {
       constructor(private particulierService: ParticulierService) {}
 
-  @Get('particulier/bons/all')
+  @Get('particulier/bons')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
@@ -31,7 +31,7 @@ export class ParticulierController {
     return this.particulierService.getBons(userId);
   }
 
-  @Get('particulier/campagnes/all')
+  @Get('particulier/campagnes')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
@@ -45,7 +45,7 @@ export class ParticulierController {
   }
 
 
-  @Get('particulier/programs/all')
+  @Get('particulier/programs')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
@@ -59,7 +59,7 @@ export class ParticulierController {
     return this.particulierService.getPrograms();
   }
 
-  @Get('particulier/recompenses/all')
+  @Get('particulier/recompenses')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
@@ -73,7 +73,7 @@ export class ParticulierController {
     return this.particulierService.getRecompenses();
   }
 
-  @Get('particulier/companies/all')
+  @Get('particulier/companies')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
@@ -85,7 +85,7 @@ export class ParticulierController {
     return this.particulierService.getEntreprises();
   }
 
-  @Get('particulier/points/all')
+  @Get('particulier/points')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
@@ -98,9 +98,9 @@ export class ParticulierController {
     return this.particulierService.getPoints(userId);
   }
   
-  @Get('particulier/historiques/all')
+  @Get('particulier/historiques')
   @ApiBearerAuth()
-  @ApiQuery({ name: 'page', description: 'Numéro de page', required: true })
+  @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({
     name: 'limit',
     description: "Limite d'éléments par page",
@@ -111,7 +111,7 @@ export class ParticulierController {
     return this.particulierService.getHistoriques(userId);
   }
 
-  @Get('particulier/mes_recompenses/all')
+  @Get('particulier/mes_recompenses')
   @ApiBearerAuth()
   @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
   @ApiQuery({

@@ -87,17 +87,10 @@ export class EntrepriseController {
     return this.entrepriseService.desactivateProgramme(id);
   }
 
-  @Get('company/recompense/activate/:id')
+  @Get('company/recompense/status/change/:id')
   @ApiParam({ name: 'id', description: 'ID de la récompense à activer' })
   async activateRecompense(@Param('id') id: number): Promise<any> {
-    return this.entrepriseService.activateRecompense(id);
-  }
-
-
-  @Get('company/recompense/desactivate/:id')
-  @ApiParam({ name: 'id', description: 'ID de la récompense à désactiver' })
-  async desactivateRecompense(@Param('id') id: number): Promise<any> {
-    return this.entrepriseService.desactivateRecompense(id);
+    return this.entrepriseService.changeStatusRecompense(id);
   }
 
   @Delete('company/program/delete/:id')

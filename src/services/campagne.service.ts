@@ -134,8 +134,7 @@ export class CampagneService {
     if(existCampagnes){
       for(let campagne of existCampagnes){
         const campagneDateFin = new Date(campagne.dateFin).toISOString().slice(0,10);
-        console.log('Date fin camp : ',campagneDateFin)
-        console.log('Date now camp : ',currentDate)
+        
         if (campagneDateFin < currentDate) {
           campagne.status = 'cloturé';
           campagne.isActive = false;
