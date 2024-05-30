@@ -43,7 +43,7 @@ export class ParticulierService {
                     // console.log('addr part', adresse);
                     const sexe = existParticulier.sexe;
                     
-                    const bons = await this.bonModel.find({ where: { isActive: true, sexeCible: sexe } });
+                    const bons = await this.bonModel.find({ where: { isActive: true, sexeCible: sexe }, relations: ['entreprise'] });
                 
                     const filteredBons = bons.filter(bon => {
                     const ageMatch = ageYears >= bon.ageCibleMin && ageYears <= bon.ageCibleMax;
@@ -87,7 +87,7 @@ export class ParticulierService {
         // const adresse = existParticulier.adresse;
         const sexe = existParticulier.sexe;
         
-        const campagnes = await this.campagneModel.find({ where: { isActive: true, status: 'en cours', sexeCible: sexe } });
+        const campagnes = await this.campagneModel.find({ where: { isActive: true, status: 'en cours', sexeCible: sexe }, relations: ['entreprise'] });
         console.log('campagnes', campagnes);
         const filteredcampagnes = campagnes.filter(campagne => {
         const ageMatch = ageYears >= campagne.ageCibleMin && ageYears <= campagne.ageCibleMax;
@@ -118,7 +118,7 @@ export class ParticulierService {
   
   async getPrograms(): Promise<Program[]> {
       try {
-        const programmes = await this.programModel.find({where:{isActive:true}});
+        const programmes = await this.programModel.find({where:{isActive:true},  relations: ['entreprise']});
         return programmes;
       } catch (error) {
         this.logger.error(`Erreur lors de la recuperation des programmes !: ${error.message}`);
@@ -128,7 +128,7 @@ export class ParticulierService {
 
   async getRecompenses(): Promise<Recompense[]> {
     try {
-      const recompenses = await this.recompenseModel.find({where:{ statut: 'actif' }});
+      const recompenses = await this.recompenseModel.find({where:{ statut: 'actif'}, relations: ['entreprise'] });
       return recompenses;
     } catch (error) {
       console.error(error);
