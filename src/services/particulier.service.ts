@@ -213,7 +213,7 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
 
 
 
-    async convertPoints(clientId: number,  idRecompense: number):  Promise<{ message: string }>{
+    async convertPoints(clientId: number,  idRecompense: number):  Promise<{ message: string, recompense: RecompensePart }>{
       const particulier = await this.particulierModel.findOne({
         where: { id: clientId },
       });
@@ -226,6 +226,8 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
           HttpStatus.NOT_FOUND,
         );
       }
+
+      const newRecompense = new RecompensePart();
   
       const recompense = await this.recompenseModel.findOne({
         where: { id: idRecompense, statut: 'actif' }, relations: ['entreprise']
@@ -260,12 +262,14 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
           HttpStatus.UNPROCESSABLE_ENTITY,
         );
       }else{
+        const mycodeRecompense = this.generateCodeRecompense();
+        console.log('code recompense', mycodeRecompense);
         pointParticulier.nombrePoints -= recompense.valeurEnPoints;
         await this.pointModel.save(pointParticulier);
-        const newRecompense = new RecompensePart();
         newRecompense.nomRecompense = recompense.nomRecompense; 
         newRecompense.nombrePoints = recompense.valeurEnPoints;
         newRecompense.montant = recompense.montant;
+        newRecompense.codeRecompense = 'GIFT' + mycodeRecompense;
         newRecompense.isExpired = false;
         const currentDate = new Date();
         const expirationDate = new Date(currentDate);
@@ -284,7 +288,8 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
         );
         return {
           message:
-            "Conversion Réussie, vous avez converti " + recompense.valeurEnPoints + " point(s) de fidélité",
+            "Conversion Réussie, vous avez converti " + recompense.valeurEnPoints + " point(s) de fidélité" + " votre code recompense est :" + newRecompense.codeRecompense,
+            recompense: newRecompense
         };
       }
 
@@ -309,5 +314,10 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
         this.logger.error(`Erreur lors de la récupération de vos recompenses : ${error.message}`);
         throw new Error("Erreur lors de la récupération de vis recompenses !");
         }
+      }
+
+      generateCodeRecompense(): string{
+        const codeRecompense = Math.floor(100000 + Math.random() * 900000).toString();
+        return codeRecompense;
       }
 }

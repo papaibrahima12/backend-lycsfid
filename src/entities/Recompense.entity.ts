@@ -40,7 +40,7 @@ export class Recompense {
    @ApiProperty({required:false})
    dateActivation: Date;
 
-   @IsEnum([1, 7, 30],{message: 'Veuillez selectionner une durée valide' })
+   @IsEnum([1, 7, 30],{message: 'Veuillez selectionner une durée valide entre 1, 7, 30' })
    @Column({ 
     type: 'enum',
     enum: [1, 7, 30],
@@ -48,7 +48,7 @@ export class Recompense {
     })
    @ApiProperty({ required: true })
    dureeValidite: number;
-
+   
    @ManyToOne(() => Entreprise, { nullable: false })
    @JoinColumn({ name: 'entrepriseId' })
    entreprise: Entreprise;

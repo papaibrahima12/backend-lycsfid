@@ -28,6 +28,10 @@ export class RecompensePart {
   @JoinColumn({ name: 'clientId' })
   client: Particulier;
 
+  @Column({ type: 'varchar', length: 255, nullable: true })
+  @ApiProperty({ required: true })
+  codeRecompense: string;
+
   @ManyToOne(() => Entreprise, { nullable: false })
   @JoinColumn({ name: 'entrepriseId' })
   entreprise: Entreprise;
