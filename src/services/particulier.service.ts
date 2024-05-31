@@ -298,7 +298,7 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
 
     async getMesRecompenses(clientId: number): Promise<RecompensePart[]> {
       try {
-        const client = await this.particulierModel.findOne({ where: { id: clientId }, relations: ['entreprise'] });
+        const client = await this.particulierModel.findOne({ where: { id: clientId }});
         if (!client) {
           throw new HttpException(
             {
@@ -308,9 +308,10 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
             HttpStatus.NOT_FOUND,
           );
         }
-        const mesRecompenses = await this.recompensePartModel.find({ where: { client: client, isExpired: false } });
+        const mesRecompenses = await this.recompensePartModel.find({ where: { client: client, isExpired: false }, relations: ['entreprise']});
         return mesRecompenses;
       } catch (error) {
+        console.error(error);
         this.logger.error(`Erreur lors de la récupération de vos recompenses : ${error.message}`);
         throw new Error("Erreur lors de la récupération de vis recompenses !");
         }
