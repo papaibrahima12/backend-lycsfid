@@ -298,7 +298,7 @@ async getPoints(clientId: number): Promise<PointParEntreprise[]> {
 
     async getMesRecompenses(clientId: number): Promise<RecompensePart[]> {
       try {
-        const client = await this.particulierModel.findOne({ where: { id: clientId } });
+        const client = await this.particulierModel.findOne({ where: { id: clientId }, relations: ['entreprise'] });
         if (!client) {
           throw new HttpException(
             {
