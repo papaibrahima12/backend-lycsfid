@@ -42,12 +42,12 @@ export class AuthService {
       return { message: 'Inscription Reussie' };
  }
 
- async registerCompany(email: string, telephone: string,adresse: string, ninea: string, password: string, new_password:string): Promise<{ message: string}> {
+ async registerCompany(nomEntreprise: string, email: string, telephone: string, adresse: string, groupe: string, ninea: string, password: string, new_password:string): Promise<{ message: string}> {
      const user = await this.entrepriseRepository.findOne({ where:{ email:email }});
       if (user) {
         throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
-          error: 'Ce partenaire existe déjà',
+          error: 'Ce partenaire existe déjà !',
         }, HttpStatus.UNPROCESSABLE_ENTITY)
       }
       if (password !== new_password) {
@@ -59,9 +59,11 @@ export class AuthService {
       const hash = await bcrypt.hash(password, 10);
       const hashedPassword = await bcrypt.hash(password, hash);
       const newCompanyAccount = await this.entrepriseRepository.save({
+           nomEntreprise: nomEntreprise,
            telephone : telephone,
            email : email,
-           adresse: adresse, 
+           adresse: adresse,
+           groupe: groupe,
            ninea : ninea,
            password : hashedPassword,
            new_password : hashedPassword,
@@ -381,7 +383,7 @@ export class AuthService {
       return { message: "Mot de passe modifié avec succès!"};
   }
 
-  async changeProfileCompany(id: number, prenom:string, nom:string, telephone: string, sousGroupe:string,adresse: string, file?: Express.Multer.File){
+  async changeProfileCompany(id: number, prenom:string, nom:string, telephone: string, contactRef: string, nomEntreprise: string, groupe: string, sousGroupe:string,adresse: string, file?: Express.Multer.File){
     const existEntreprise = await this.entrepriseRepository.findOne({where: {id: id}});
     if (!existEntreprise) {
       throw new HttpException({
@@ -398,7 +400,10 @@ export class AuthService {
       existEntreprise.prenom = prenom;
       existEntreprise.nom = nom;
       existEntreprise.telephone = telephone;
+      existEntreprise.contactRef = contactRef;
+      existEntreprise.nomEntreprise = nomEntreprise;
       existEntreprise.adresse = adresse;
+      existEntreprise.groupe = groupe;
       existEntreprise.sousGroupe = sousGroupe;
     await this.entrepriseRepository.update(id, existEntreprise);
     return {message: 'Profil modifié avec succès !'};

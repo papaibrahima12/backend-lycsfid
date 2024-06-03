@@ -39,7 +39,7 @@ import keyConfig from 'src/config/key.config';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('key.access'),
-        signOptions: { expiresIn: '02h' },
+        signOptions: { expiresIn: '03h' },
       }),
       inject: [ConfigService],
     }),

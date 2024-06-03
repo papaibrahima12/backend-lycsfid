@@ -100,6 +100,8 @@ export class AuthController {
     schema: {
       type: "object",
       properties: {
+        nomEntrprise: { type: "string" },
+        groupe: { type: "string" },
         email: { type: "string" },
         telephone: { type: "string" },
         adresse: {
@@ -132,9 +134,11 @@ export class AuthController {
     @Body() companyInfo: Entreprise,
   ): Promise<{ message: string }> {
     await this.userAuthService.registerCompany(
+      companyInfo.nomEntreprise,
       companyInfo.email,
       companyInfo.telephone,
       companyInfo.adresse,
+      companyInfo.groupe,
       companyInfo.ninea,
       companyInfo.password,
       companyInfo.new_password,
@@ -283,9 +287,12 @@ export class AuthController {
         prenom: { type: "string" },
         nom: { type: "string" },
         telephone: { type: "string" },
+        contactRef: { type: "string" },
+        nomEntreprise: { type: "string" },
         adresse: {
           type: "string",
         },
+        groupe: { type: "string" },
         sousGroupe: { type: "string" },
         imageProfil: {
           type: "string",
@@ -301,6 +308,9 @@ export class AuthController {
       prenom: string;
       nom: string;
       telephone: string;
+      contactRef: string;
+      nomEntreprise: string
+      groupe: string;
       sousGroupe: string;
       adresse: string;
     },
@@ -313,6 +323,9 @@ export class AuthController {
       companyInfo.prenom,
       companyInfo.nom,
       companyInfo.telephone,
+      companyInfo.contactRef,
+      companyInfo.nomEntreprise,
+      companyInfo.groupe,
       companyInfo.sousGroupe,
       companyInfo.adresse,
       file,
