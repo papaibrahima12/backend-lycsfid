@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 import { Caissier } from "src/entities/Caissier.entity";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
@@ -13,6 +13,7 @@ import * as admin from "firebase-admin";
 
 @Injectable()
 export class AgentService {
+  private readonly logger = new Logger(AgentService.name);
   constructor(
     @InjectRepository(PointParEntreprise)
     private pointModel: Repository<PointParEntreprise>,
@@ -39,6 +40,7 @@ export class AgentService {
     const caissier = await this.caissierModel.findOne({
       where: { id: caissierId, entreprise: entreprise },
     });
+    console.log('caissier', caissier);
     if (!caissier) {
       throw new HttpException(
         {
@@ -372,4 +374,26 @@ export class AgentService {
 
     return { message: "Transaction annulée avec succès !" };
   }
+
+
+  async getHistoriques(caissierId: number): Promise<Historique[]> {
+    try {
+      const caissier = await this.caissierModel.findOne({ where: { id: caissierId } });
+      if (!caissier) {
+        throw new HttpException(
+          {
+            status: HttpStatus.NOT_FOUND,
+            error: 'Caissier non trouvé !',
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+      const historiques = await this.historiqueModel.find({ where: { caissier: caissier }, relations: ['entreprise', 'client'] });
+      return historiques;
+    } catch (error) {
+      console.error(error);
+      this.logger.error(`Erreur lors de la récupération de l'historique : ${error.message}`);
+      throw new Error("Erreur lors de la récupération de l'historique !");
+      }
+    }
 }

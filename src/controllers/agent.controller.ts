@@ -13,8 +13,10 @@ import {
   ApiBody,
   ApiParam,
   ApiBearerAuth,
+  ApiQuery,
 } from '@nestjs/swagger';
 import { AgentGuard } from 'src/guards/agent.guard';
+import { Historique } from 'src/entities/Historique.entity';
 
 
 @ApiTags('Agents Services')
@@ -37,8 +39,8 @@ export class AgentController {
       },
       description: 'Données pour attribuer des points !',
     },
-  })  async attributePoints(@Body() infos:{clientId:number, entrepriseId: number, montant:number} ,@Request() request: { user: { caissierId: number }}): Promise<any> {
-    const caissierId = request['user'].caissierId;
+  })  async attributePoints(@Body() infos:{clientId:number, entrepriseId: number, montant:number} ,@Request() request: { userId: { sub: number }}): Promise<any> {
+    const caissierId = request['userId'].sub;
     return this.agentService.attributePoints(caissierId, infos.entrepriseId, infos.clientId, infos.montant);
   }
 
@@ -53,15 +55,28 @@ export class AgentController {
       },
       description: 'Données pour convertir des points !',
     },
-  })  async enleverPoints(@Body() infos:{clientId:number, entrepriseId: number, montant:number} ,@Request() request: { user: { caissierId: number }}): Promise<any> {
-    const caissierId = request['user'].caissierId;
+  })  async enleverPoints(@Body() infos:{clientId:number, entrepriseId: number, montant:number} ,@Request() request: { userId: { sub: number }}): Promise<any> {
+    const caissierId = request['userId'].sub;
     return this.agentService.enleverPoint(caissierId, infos.entrepriseId, infos.clientId, infos.montant);
   }
 
   @Get('agent/cancel/transaction/:id')
   @ApiParam({ name: 'id', description: 'ID Transaction' })
-  async cancelTransaction(@Param('id') id: number,@Request() request: { user: { caissierId: number }}): Promise<any> {
-    const caissierId = request['user'].caissierId;
+  async cancelTransaction(@Param('id') id: number,@Request() request: { userId: { sub: number }}): Promise<any> {
+    const caissierId = request['userId'].sub;
     return this.agentService.annulerTransaction(caissierId, id);
+  }
+
+  @Get('caissier/historiques')
+  @ApiBearerAuth()
+  @ApiQuery({ name: 'page', description: 'Numéro de page', required: false })
+  @ApiQuery({
+    name: 'limit',
+    description: "Limite d'éléments par page",
+    required: false,
+  })
+  async getHistoriques(@Request() request: { userId: { sub: number }}): Promise<Historique[]> {
+    const caissierId = request['userId'].sub;
+    return this.agentService.getHistoriques(caissierId);
   }
 }

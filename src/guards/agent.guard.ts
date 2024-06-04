@@ -27,7 +27,7 @@ export class AgentGuard implements CanActivate {
     } else {
       throw new UnauthorizedException("Les informations sur l'entreprise sont introuvables");
     }
-      request['user'] = payload;
+      request['userId'] = payload;
     return true;
     } catch (error) {
       if (error instanceof JsonWebTokenError && error.name === 'JsonWebTokenError') {
