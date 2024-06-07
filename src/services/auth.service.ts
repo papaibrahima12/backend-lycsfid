@@ -67,6 +67,7 @@ export class AuthService {
            ninea : ninea,
            password : hashedPassword,
            new_password : hashedPassword,
+           createdAt: new Date()
       });      
           await this.verificationRepository.save({
             token: this.randomString(50),
@@ -145,7 +146,7 @@ export class AuthService {
       if (!user) {
         throw new HttpException({
           status: HttpStatus.NOT_FOUND,
-          error: "Cet utilisateur n'existe pas",
+          error: "Cet utilisateur n'existe pas !",
         }, HttpStatus.NOT_FOUND)
       }
       const passwordMatch = await bcrypt.compare(password, user.password);

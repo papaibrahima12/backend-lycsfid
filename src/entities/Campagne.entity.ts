@@ -12,7 +12,6 @@ export class Campagne{
   @ApiProperty()
   nomCampagne: string;
 
-  @IsNotEmpty({message: "Le code Promo est requis !"})
   @Column({type:'varchar', length:30, unique:true})
   @ApiProperty()
   codePromo:string;

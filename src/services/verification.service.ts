@@ -21,7 +21,7 @@ export class VerificationService {
   });
 
   if (!verification) {
-    throw new NotFoundException('Compte non vérifié');
+    throw new NotFoundException('Compte inexistant, veuillez vous inscrire svp !');
   }
 
   const existCompanyAccount = await this.entrepriseRepository.findOne({
@@ -39,7 +39,7 @@ export class VerificationService {
   await this.sendEmailService.notifyActivationAccount(existCompanyAccount.email);
   await this.verificationRepository.delete(verification.id);
 
-  return { message: 'Compte activé avec succès', entreprise: existCompanyAccount };
+  return { message: 'Compte activé avec succès !', entreprise: existCompanyAccount };
 }
 
 

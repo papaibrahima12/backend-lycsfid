@@ -45,6 +45,6 @@ import keyConfig from 'src/config/key.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService,OtpService,VerificationService,SendMessageServiceService, Session, SendEmailService, JwtService],
+  providers: [AuthService,OtpService,VerificationService,SendMessageServiceService, Session, SendEmailService],
 })
 export class UserAuthModule {}

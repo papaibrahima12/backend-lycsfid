@@ -21,6 +21,11 @@ export class AuthGuard implements CanActivate {
       });
       if (payload.role !== 'admin') {
         throw new UnauthorizedException('Seuls les administrateurs peuvent accéder à cette ressource');
+      }
+      if (payload.userId) {
+        request['user'] = payload.userId;
+      } else {
+        throw new UnauthorizedException("Les informations sur l'entreprise sont introuvables");
       }      
       request['user'] = payload;
     } catch(error) {

@@ -79,6 +79,9 @@ export class Entreprise {
   @Column({type:'text', nullable:true})
   token: string;
 
+  @Column({ type: 'date', default: null })
+  createdAt: Date;
+
   @Column({ default: false })
   verified: boolean;
 

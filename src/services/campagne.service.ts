@@ -12,18 +12,20 @@ import { NotificationService } from 'src/notification/notification.service';
 
 @Injectable()
 export class CampagneService {
+    private generatedCodes = new Set();
     private readonly logger = new Logger(CampagneService.name);
     constructor(@InjectRepository(Campagne) private campagneModel: Repository<Campagne>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
-                @InjectRepository(Bon) private bonModel: Repository<Bon>,
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
                 private readonly sendingNotificationService: NotificationService
                 
     ){}
 
     async createCampagne(campagneData: Campagne,userId: number, file?: Express.Multer.File,): Promise<{message:string, campagne:Campagne}> {
-        const bon = await this.campagneModel.findOne({where : { codePromo: campagneData.codePromo, entreprise:{id:userId} }});
-        if(bon){
+        const codePromo = this.generateCodePromo();
+        campagneData.codePromo = codePromo;
+        const campagne = await this.campagneModel.findOne({where : { nomCampagne: campagneData.nomCampagne, entreprise:{id:userId} }});
+        if(campagne){
            throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           error: 'Cette campagne existe déjà',
@@ -47,6 +49,7 @@ export class CampagneService {
       }, HttpStatus.NOT_FOUND);
     }  
     campagneData.entreprise = entreprise;
+    campagneData.codePromo = this.generateCodePromo();
       await this.campagneModel.save(campagneData);
       const particuliers = await this.particulierModel.find({});
       for (let existParticulier of particuliers) {
@@ -107,6 +110,13 @@ export class CampagneService {
       const uploadedImage = await this.upload(file);
       campagneData.image = uploadedImage;
     }
+
+    if( campagneData.dateDebut > campagneData.dateFin){
+      throw new HttpException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        error: 'La date de début doit etre inférieure à la date de fin',
+      }, HttpStatus.UNPROCESSABLE_ENTITY)
+  }
     Object.assign(existingCampagne, campagneData);
 
     await this.campagneModel.update(id, existingCampagne);
@@ -210,5 +220,14 @@ export class CampagneService {
       this.logger.error(`An error occurred while retrieving campagnes: ${error.message}`);
       throw new Error('An error occurred while retrieving campagnes');
     }
+  }
+
+  generateCodePromo(): string{
+    let codePromo: string;
+    do {
+      codePromo = Math.floor(100000 + Math.random() * 900000).toString();
+    } while (this.generatedCodes.has(codePromo));
+    this.generatedCodes.add(codePromo);
+    return codePromo;
   }
 }

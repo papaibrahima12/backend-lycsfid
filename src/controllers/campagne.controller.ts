@@ -19,7 +19,6 @@ export class CampagneController {
     @ApiBody({schema:{ type: 'object',
       properties: {
         nomCampagne: { type: 'string', nullable:false },
-        codePromo: { type: 'string' },
         dateDebut: { type: 'string',  format:'date' },
         dateFin: { type: 'string', format:'date' },
         ageCibleMin: { type: 'integer', nullable:true },
@@ -49,7 +48,6 @@ export class CampagneController {
     @ApiBody({schema:{ type: 'object',
       properties: {
         nomCampagne: { type: 'string', nullable:false },
-        codePromo: { type: 'string' },
         dateDebut: { type: 'string',  format:'date' },
         dateFin: { type: 'string', format:'date' },
         ageCibleMin: { type: 'integer', nullable:true },

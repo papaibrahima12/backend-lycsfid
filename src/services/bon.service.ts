@@ -10,6 +10,7 @@ import {  LessThanOrEqual, Repository } from 'typeorm';
 
 @Injectable()
 export class BonService {
+     private generatedCodes = new Set();
     private readonly logger = new Logger(BonService.name);
     constructor(@InjectRepository(Bon) private bonModel: Repository<Bon>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
@@ -19,8 +20,10 @@ export class BonService {
     ){}
 
     async createBon(bonData: Bon, userId: number, file?: Express.Multer.File): Promise<{message:string, bon:Bon}> {
-        const bon = await this.bonModel.findOne({where : { codeReduction: bonData.codeReduction}});
-        if(bon){
+        bonData.codeReduction = this.generateCodeReduction();
+        const bon = await this.bonModel.findOne({where : { nomBon: bonData.nomBon}});
+        console.log('bon',bon);
+        if(bon){ 
            throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
           error: 'Ce bon existe deja',
@@ -44,6 +47,7 @@ export class BonService {
             }, HttpStatus.NOT_FOUND);
           }
           bonData.entreprise = entreprise;
+          bonData.codeReduction = this.generateCodeReduction();
           await this.bonModel.save(bonData);
 
           const particuliers = await this.particulierModel.find({});
@@ -91,7 +95,12 @@ export class BonService {
     const uploadedImage = await this.upload(file);
     existingBon.image = uploadedImage;
   }
-
+  if( bonData.dateDebut > bonData.dateFin){
+    throw new HttpException({
+      status: HttpStatus.UNPROCESSABLE_ENTITY,
+      error: 'La date de debut doit etre inferieur à la date de fin',
+    }, HttpStatus.UNPROCESSABLE_ENTITY)
+}
   Object.assign(existingBon, bonData);
 
   await this.bonModel.update(id,existingBon);
@@ -211,5 +220,14 @@ async deleteBon(id: number): Promise<{ message: string }> {
         this.logger.error(`Erreur lors de la recuperation des bons: ${error.message}`);
         throw new Error('Erreur lors de la recuperation des bons');
       }
+  }
+
+  generateCodeReduction(): string{
+    let codeReduction: string;
+    do {
+      codeReduction = Math.floor(100000 + Math.random() * 900000).toString();
+    } while (this.generatedCodes.has(codeReduction));
+    this.generatedCodes.add(codeReduction);
+    return codeReduction;
   }
 }

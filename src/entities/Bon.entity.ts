@@ -32,7 +32,6 @@ export class Bon {
   @ApiProperty({required:true})
   typeReduction: string;
 
-  @IsNotEmpty({message: "La code de reduction est requis !"})
   @Column({type:'varchar',length:255,nullable:true})
   @ApiPropertyOptional()
   codeReduction: string;
