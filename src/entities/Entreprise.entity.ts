@@ -85,6 +85,12 @@ export class Entreprise {
   @Column({ default: false })
   verified: boolean;
 
+  @Column({ default: false })
+  suspended: boolean;
+  
+  @Column({ type: 'date', default: null })
+  suspendedAt: Date;
+
   @Column({type:'varchar', length:255, nullable:true})
   verificationCode: string;
 

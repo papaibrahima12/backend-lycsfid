@@ -1,3 +1,4 @@
+import { AdminService } from 'src/services/admin.service';
 import { Campagne } from 'src/entities/Campagne.entity';
 import { Module } from '@nestjs/common';
 import { JwtModule, JwtService } from '@nestjs/jwt';
@@ -19,6 +20,7 @@ import { SendMessageServiceService } from 'src/services/sendmessageservice.servi
 import { OtpService } from 'src/services/otp.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import keyConfig from 'src/config/key.config';
+import { AdminModule } from 'src/modules/admin.module';
 
 @Module({
   imports: [
@@ -26,6 +28,7 @@ import keyConfig from 'src/config/key.config';
       load: [keyConfig],
     }),
     PassportModule,
+    AdminModule,
     TypeOrmModule.forFeature([
       User,
       Entreprise,
@@ -45,6 +48,6 @@ import keyConfig from 'src/config/key.config';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService,OtpService,VerificationService,SendMessageServiceService, Session, SendEmailService],
+  providers: [AuthService,OtpService, AdminService, VerificationService,SendMessageServiceService, Session, SendEmailService],
 })
 export class UserAuthModule {}

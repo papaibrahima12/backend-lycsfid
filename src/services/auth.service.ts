@@ -173,6 +173,10 @@ export class AuthService {
       if (user.verified == false){
           throw new UnauthorizedException("Votre compte n'est pas encore activé !");
       }
+
+      if (user.suspended == true){
+        throw new UnauthorizedException("Votre compte est bloqué, veuillez contacter votre administrateur !");
+    }
       const secret = this.configService.get<string>('key.access');
       const payload = { userId: user.id, role:user.role, user:user };
       const token = this.jwtService.sign(payload, {secret} );
@@ -290,7 +294,6 @@ export class AuthService {
     await this.sendMessService.sendSMSOTP(telephone);
 
     const optStored = this.otpService.getOtp(existParticulier.telephone);
-    console.log('Otp stpred', optStored);
     existParticulier.verificationCode = optStored;
     await this.particulierRepository.save(existParticulier);
     if (!optStored) {

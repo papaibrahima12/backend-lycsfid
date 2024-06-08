@@ -28,10 +28,10 @@ import {
 import { FileInterceptor } from "@nestjs/platform-express";
 import { CompanyGuard } from "src/guards/company.guard";
 import { Caissier } from "src/entities/Caissier.entity";
-import { SendMessageServiceService } from "src/services/sendmessageservice.service";
 import { OtpService } from "src/services/otp.service";
 import { RefreshTokenGuard } from "src/guards/refreshtoken.guard";
 import { RefreshtokenprticulierGuard } from "src/guards/refreshtokenprticulier.guard";
+import { AdminService } from "src/services/admin.service";
 
 @ApiTags("Authentication for all users")
 @Controller("api/auth")
@@ -40,7 +40,7 @@ export class AuthController {
     private readonly userAuthService: AuthService,
     private readonly emailService: SendEmailService,
     private readonly verificationService: VerificationService,
-    private readonly sendSMSService: SendMessageServiceService,
+    private readonly adminService: AdminService,
     private readonly otpService: OtpService,
   ) {}
 
@@ -467,6 +467,14 @@ export class AuthController {
   @Get("admin/verifyCompany/:id")
   async verifyCompanyAccount(@Param("id") id: number) {
     const result = await this.verificationService.verifyCompanyAccount(id);
+    return result;
+  }
+
+  @UseGuards(AuthGuard)
+  @ApiBearerAuth()
+  @Get("admin/block/:id")
+  async changeStatusCompany(@Param("id") id: number) {
+    const result = await this.adminService.changeStatusEntreprise(id);
     return result;
   }
 

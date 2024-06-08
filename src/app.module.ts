@@ -12,6 +12,8 @@ import { EntrepriseModule } from './modules/entreprise.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { JwtService } from '@nestjs/jwt';
 import { NotificationModule } from './notification/notification.module';
+import { AdminService } from './services/admin.service';
+import { AdminModule } from './modules/admin.module';
 
 
 @Module({
@@ -39,6 +41,7 @@ import { NotificationModule } from './notification/notification.module';
     ParticulierModule,
     EntrepriseModule,
     AgentModule,
+    AdminModule,
     NotificationModule
   ],
   controllers: [AppController],
