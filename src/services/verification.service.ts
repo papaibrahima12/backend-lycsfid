@@ -16,20 +16,19 @@ export class VerificationService {
   ) {}
 
   async verifyCompanyAccount(id: number): Promise<{ message: string; entreprise: Entreprise }> {
+    const existCompanyAccount = await this.entrepriseRepository.findOne({
+      where:{ id : id}
+    });
+  
+    if (!existCompanyAccount) {
+      throw new NotFoundException('Entreprise introuvable !');
+    }
   const verification = await this.verificationRepository.findOne({
-    where: {id:id, type: 'Creating New Account' },  relations: ['user']
+    where: {user:existCompanyAccount, type: 'Creating New Account' },  relations: ['user']
   });
 
   if (!verification) {
-    throw new NotFoundException('Compte inexistant, veuillez vous inscrire svp !');
-  }
-
-  const existCompanyAccount = await this.entrepriseRepository.findOne({
-    where:{ id : verification.user.id}
-  });
-
-  if (!existCompanyAccount) {
-    throw new NotFoundException('Entreprise introuvable');
+    throw new NotFoundException('Compte déjà activé, veuillez vous connecter svp !');
   }
 
   await this.entrepriseRepository.update(existCompanyAccount.id, {
