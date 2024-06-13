@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Verification } from 'src/entities/Verification.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { SendEmailService } from './send-email.service';
+import { StatsCompanies } from 'src/entities/StatsCompanies.entity';
 
 @Injectable()
 export class VerificationService {
@@ -12,6 +13,7 @@ export class VerificationService {
     private readonly verificationRepository: Repository<Verification>,
     @InjectRepository(Entreprise)
     private readonly entrepriseRepository: Repository<Entreprise>,
+    @InjectRepository(StatsCompanies) private readonly statCompanyRepository: Repository<StatsCompanies>,
     private sendEmailService:SendEmailService
   ) {}
 
@@ -31,10 +33,23 @@ export class VerificationService {
     throw new NotFoundException('Compte déjà activé, veuillez vous connecter svp !');
   }
 
+  const statCompany = await this.statCompanyRepository.findOne({
+    where: {entreprise:existCompanyAccount}
+  });
+
+  if (!statCompany) {
+    throw new NotFoundException('Pas de stats trouvée !');
+  }
+
   await this.entrepriseRepository.update(existCompanyAccount.id, {
     verified: true,
     verifiedAt: new Date(),
   });
+
+  await this.statCompanyRepository.update(statCompany.id, {
+    verified: true
+  });
+
   await this.sendEmailService.notifyActivationAccount(existCompanyAccount.email);
   await this.verificationRepository.delete(verification.id);
 

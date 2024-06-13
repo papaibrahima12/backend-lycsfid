@@ -8,6 +8,7 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { Bon } from 'src/entities/Bon.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { NotificationService } from 'src/notification/notification.service';
+import { StatsCamp } from 'src/entities/StatsCamp.entity';
 
 
 @Injectable()
@@ -17,11 +18,13 @@ export class CampagneService {
     constructor(@InjectRepository(Campagne) private campagneModel: Repository<Campagne>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                @InjectRepository(StatsCamp) private statCampRepository: Repository<StatsCamp>,
                 private readonly sendingNotificationService: NotificationService
                 
     ){}
 
     async createCampagne(campagneData: Campagne,userId: number, file?: Express.Multer.File,): Promise<{message:string, campagne:Campagne}> {
+      let nbreCampagnes = 0;
         const codePromo = this.generateCodePromo();
         campagneData.codePromo = codePromo;
         const campagne = await this.campagneModel.findOne({where : { nomCampagne: campagneData.nomCampagne, entreprise:{id:userId} }});
@@ -51,6 +54,12 @@ export class CampagneService {
     campagneData.entreprise = entreprise;
     campagneData.codePromo = this.generateCodePromo();
       await this.campagneModel.save(campagneData);
+      nbreCampagnes = nbreCampagnes + 1;
+      await this.statCampRepository.save({
+        nombreCampagnes: nbreCampagnes,
+        dateCreation: new Date(),
+        entreprise: entreprise
+      });
       const particuliers = await this.particulierModel.find({});
       for (let existParticulier of particuliers) {
         const currentDate = new Date();

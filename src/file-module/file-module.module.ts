@@ -7,12 +7,14 @@ import { Bon } from "src/entities/Bon.entity";
 import { Campagne } from "src/entities/Campagne.entity";
 import { Entreprise } from "src/entities/Entreprise.entity";
 import { Particulier } from "src/entities/Particulier.entity";
+import { StatsBon } from "src/entities/StatsBon.entity";
+import { StatsCamp } from "src/entities/StatsCamp.entity";
 import { NotificationService } from "src/notification/notification.service";
 import { BonService } from "src/services/bon.service";
 import { CampagneService } from "src/services/campagne.service";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Campagne, Bon, Entreprise, Particulier])],
+  imports: [TypeOrmModule.forFeature([Campagne, Bon, Entreprise, Particulier, StatsCamp, StatsBon])],
   controllers: [BonController, CampagneController],
   providers: [BonService, CampagneService, JwtService, NotificationService],
 })

@@ -5,6 +5,7 @@ import * as AWS from 'aws-sdk';
 import { Bon } from 'src/entities/Bon.entity';
 import { Entreprise } from 'src/entities/Entreprise.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
+import { StatsBon } from 'src/entities/StatsBon.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import {  LessThanOrEqual, Repository } from 'typeorm';
 
@@ -15,11 +16,13 @@ export class BonService {
     constructor(@InjectRepository(Bon) private bonModel: Repository<Bon>,
                 @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                @InjectRepository(StatsBon) private statBonRepository: Repository<StatsBon>,
                 private readonly sendingNotificationService: NotificationService
 
     ){}
 
     async createBon(bonData: Bon, userId: number, file?: Express.Multer.File): Promise<{message:string, bon:Bon}> {
+      let nbreBons = 0;
         bonData.codeReduction = this.generateCodeReduction();
         const bon = await this.bonModel.findOne({where : { nomBon: bonData.nomBon}});
         console.log('bon',bon);
@@ -49,6 +52,12 @@ export class BonService {
           bonData.entreprise = entreprise;
           bonData.codeReduction = this.generateCodeReduction();
           await this.bonModel.save(bonData);
+          nbreBons = nbreBons + 1;
+          await this.statBonRepository.save({
+            nombreBons: nbreBons,
+            dateCreation: new Date(),
+            entreprise: entreprise
+          });
 
           const particuliers = await this.particulierModel.find({});
           for (let existParticulier of particuliers) {

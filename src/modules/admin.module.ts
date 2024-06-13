@@ -9,10 +9,11 @@ import { AuthController } from 'src/controllers/auth.controller';
 import { AuthService } from 'src/services/auth.service';
 import { User } from 'src/entities/User.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
+import { StatsCompanies } from 'src/entities/StatsCompanies.entity';
 
 @Module({
      imports: [
-    TypeOrmModule.forFeature([Entreprise]),
+    TypeOrmModule.forFeature([Entreprise, StatsCompanies]),
   ],
   controllers: [AdminController],
   providers: [AdminService, JwtService],

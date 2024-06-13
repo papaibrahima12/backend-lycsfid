@@ -21,6 +21,9 @@ import { OtpService } from 'src/services/otp.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import keyConfig from 'src/config/key.config';
 import { AdminModule } from 'src/modules/admin.module';
+import { StatsBon } from 'src/entities/StatsBon.entity';
+import { StatsCamp } from 'src/entities/StatsCamp.entity';
+import { StatsCompanies } from 'src/entities/StatsCompanies.entity';
 
 @Module({
   imports: [
@@ -32,6 +35,9 @@ import { AdminModule } from 'src/modules/admin.module';
     TypeOrmModule.forFeature([
       User,
       Entreprise,
+      StatsBon,
+      StatsCamp,
+      StatsCompanies,
       Particulier,
       Bon,
       Caissier,
@@ -42,7 +48,7 @@ import { AdminModule } from 'src/modules/admin.module';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         secret: configService.get<string>('key.access'),
-        signOptions: { expiresIn: '03h' },
+        signOptions: { expiresIn: '06h' },
       }),
       inject: [ConfigService],
     }),

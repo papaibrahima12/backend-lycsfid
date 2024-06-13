@@ -14,6 +14,7 @@ import { JwtService } from '@nestjs/jwt';
 import { NotificationModule } from './notification/notification.module';
 import { AdminService } from './services/admin.service';
 import { AdminModule } from './modules/admin.module';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 
 @Module({
@@ -35,6 +36,10 @@ import { AdminModule } from './modules/admin.module';
       logging: true,
     }),
     ScheduleModule.forRoot(),
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     UserAuthModule,
     MailModule,
     FileModuleModule,

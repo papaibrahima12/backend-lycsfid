@@ -9,22 +9,20 @@ import { Program } from "src/entities/Program.entity";
 import { Historique } from "src/entities/Historique.entity";
 import { NotificationService } from "src/notification/notification.service";
 import * as admin from "firebase-admin";
+import { StatsPoints } from "src/entities/StatsPoints.entity";
 
 
 @Injectable()
 export class AgentService {
   private readonly logger = new Logger(AgentService.name);
   constructor(
-    @InjectRepository(PointParEntreprise)
-    private pointModel: Repository<PointParEntreprise>,
-    @InjectRepository(Entreprise)
-    private entrepriseModel: Repository<Entreprise>,
-    @InjectRepository(Particulier)
-    private particulierModel: Repository<Particulier>,
+    @InjectRepository(PointParEntreprise) private pointModel: Repository<PointParEntreprise>,
+    @InjectRepository(Entreprise) private entrepriseModel: Repository<Entreprise>,
+    @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
     @InjectRepository(Caissier) private caissierModel: Repository<Caissier>,
-    @InjectRepository(Historique)
-    private historiqueModel: Repository<Historique>,
+    @InjectRepository(Historique) private historiqueModel: Repository<Historique>,
     @InjectRepository(Program) private programModel: Repository<Program>,
+    @InjectRepository(StatsPoints) private statPointModel: Repository<StatsPoints>,
     private readonly sendingNotificationService: NotificationService
   ) {}
 
@@ -40,7 +38,6 @@ export class AgentService {
     const caissier = await this.caissierModel.findOne({
       where: { id: caissierId, entreprise: entreprise },
     });
-    console.log('caissier', caissier);
     if (!caissier) {
       throw new HttpException(
         {
@@ -107,9 +104,9 @@ export class AgentService {
       where: {
         entreprise: entreprise,
         client: particulier,
-        caissier: caissier,
       },
     });
+
     if (!clientPoints) {
       const newClientPoint = new PointParEntreprise();
       newClientPoint.nombrePoints = equiPoint;
@@ -129,6 +126,11 @@ export class AgentService {
         dateTransaction: todayDateTime,
       });
       await this.historiqueModel.save(historique);
+      await this.statPointModel.save({
+        nombrePoints: equiPoint,
+        dateCreation: new Date(),
+        entreprise: entreprise
+      });
       await this.sendingNotificationService.sendingNotificationOneUser(
         "Accumulation de points",
         "Félicitations " + particulier.prenom + " " + particulier.nom + " !" + " \n Vous avez gagné "+ equiPoint + " points de fidelités lors de votre récent achat chez "+entreprise.nomEntreprise,
@@ -137,9 +139,12 @@ export class AgentService {
     } else {
       clientPoints.nombrePoints += equiPoint;
       clientPoints.client = particulier;
-
       await this.pointModel.save(clientPoints);
-
+      await this.statPointModel.save({
+        nombrePoints: equiPoint,
+        dateCreation: new Date(),
+        entreprise: entreprise
+      });
       const updatedClientPoint = await this.pointModel.findOne({
         where: { id: clientPoints.id },
         relations: ["client", "entreprise"],
@@ -154,6 +159,7 @@ export class AgentService {
         caissier: caissier,
         dateTransaction: todayDateTime,
       });
+
       await this.historiqueModel.save(historique);
       await this.sendingNotificationService.sendingNotificationOneUser(
         "Accumulation de points",
@@ -163,7 +169,7 @@ export class AgentService {
     }
     return {
       message:
-        "Attribution Reussie, vous avez attribué " + equiPoint + " point(s)",
+        "Attribution Réussie, vous avez attribué " + equiPoint + " point(s)",
     };
   }
 

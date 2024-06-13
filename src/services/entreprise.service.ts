@@ -7,6 +7,7 @@ import { Mecanisme } from 'src/entities/Mecanisme.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Program } from 'src/entities/Program.entity';
 import { Recompense } from 'src/entities/Recompense.entity';
+import { StatsRecompenses } from 'src/entities/StatsRecompenses.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { Repository } from 'typeorm';
 
@@ -19,6 +20,7 @@ export class EntrepriseService {
                 @InjectRepository(Caissier) private caissierModel: Repository<Caissier>,
                 @InjectRepository(Recompense) private recompenseModel: Repository<Recompense>,
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
+                @InjectRepository(StatsRecompenses) private statsRecompensesModel: Repository<StatsRecompenses>,
                 private readonly sendingNotificationService: NotificationService
 
     ){}
@@ -236,6 +238,7 @@ export class EntrepriseService {
     }
 
     async createRecompense(id: number, recompenseData: Recompense): Promise<{message:string, recompense:Recompense}>{
+      let nbreRecomp = 0;
       const entreprise = await this.entrepriseModel.findOne({where:{id: id}});
 
       if (!entreprise) {
@@ -245,7 +248,13 @@ export class EntrepriseService {
         }, HttpStatus.NOT_FOUND);
       }
       recompenseData.entreprise = entreprise;
-      const newRecompense = await this.recompenseModel.save(recompenseData)
+      const newRecompense = await this.recompenseModel.save(recompenseData);
+      nbreRecomp = nbreRecomp + 1;
+      await this.statsRecompensesModel.save({
+        nombreBons: nbreRecomp,
+        dateCreation: new Date(),
+        entreprise: entreprise
+      });
       const particuliers = await this.particulierModel.find({});
           for (let existParticulier of particuliers) {
             const recompenses = await this.recompenseModel.find({where: {statut: 'actif' }});

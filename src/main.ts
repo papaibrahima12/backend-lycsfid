@@ -7,9 +7,14 @@ import * as dotenv from 'dotenv';
 import * as process from 'process';
 import { BadRequestException, ValidationPipe } from '@nestjs/common';
 import * as passport from 'passport';
+import helmet from 'helmet';
+import csrf from 'csrf';
+
+
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
+  app.use(helmet());
   dotenv.config();
   // app.use(cookieParser());
   // app.use(

@@ -15,6 +15,8 @@ import { SendMessageServiceService } from './sendmessageservice.service';
 import { OtpService } from './otp.service';
 import { ConfigService } from '@nestjs/config';
 import { HttpStatusCode } from 'axios';
+import { StatsCamp } from 'src/entities/StatsCamp.entity';
+import { StatsCompanies } from 'src/entities/StatsCompanies.entity';
 
 @Injectable()
 export class AuthService {
@@ -25,6 +27,8 @@ export class AuthService {
                @InjectRepository(Particulier) private particulierRepository: Repository<Particulier>,
                @InjectRepository(Verification) private readonly verificationRepository: Repository<Verification>,
                @InjectRepository(Caissier) private readonly caissierRepository: Repository<Caissier>,
+               @InjectRepository(StatsCamp) private readonly statCampainRepository: Repository<StatsCamp>,
+               @InjectRepository(StatsCompanies) private readonly statCompanyRepository: Repository<StatsCompanies>,
                private readonly configService: ConfigService,
               private jwtService: JwtService, private sendEmailService:SendEmailService,private otpService: OtpService, private sendMessService: SendMessageServiceService) {}
  
@@ -43,7 +47,8 @@ export class AuthService {
  }
 
  async registerCompany(nomEntreprise: string, email: string, telephone: string, adresse: string, groupe: string, ninea: string, password: string, new_password:string): Promise<{ message: string}> {
-     const user = await this.entrepriseRepository.findOne({ where:{ email:email }});
+      let nbreUsers = 0;
+      const user = await this.entrepriseRepository.findOne({ where:{ email:email }});
       if (user) {
         throw new HttpException({
           status: HttpStatus.UNPROCESSABLE_ENTITY,
@@ -73,6 +78,13 @@ export class AuthService {
             token: this.randomString(50),
             user: newCompanyAccount,
             type: 'Creating New Account',
+          });
+          nbreUsers = nbreUsers + 1;
+          await this.statCompanyRepository.save({
+            nombreEntreprises: nbreUsers,
+            verified: false,
+            dateCreation: new Date(),
+            entreprise: newCompanyAccount
           });
         await this.sendEmailService.sendWelcomeEmail(email);
       return { message: "Inscription Réussie, votre compte est en cours d'activation ! Vous recevrez un mail !"};
