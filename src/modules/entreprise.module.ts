@@ -17,10 +17,11 @@ import { NotificationService } from 'src/notification/notification.service';
 import { StatsCamp } from 'src/entities/StatsCamp.entity';
 import { StatsBon } from 'src/entities/StatsBon.entity';
 import { StatsRecompenses } from 'src/entities/StatsRecompenses.entity';
+import { StatsPoints } from 'src/entities/StatsPoints.entity';
 
 @Module({
      imports: [
-    TypeOrmModule.forFeature([Entreprise,Particulier,Bon,Campagne,Mecanisme,Program, Caissier, Verification, PointParEntreprise, Recompense, StatsCamp, StatsBon, StatsRecompenses]),
+    TypeOrmModule.forFeature([Entreprise,Particulier,Bon,Campagne,Mecanisme,Program, Caissier, Verification, PointParEntreprise, Recompense, StatsCamp, StatsBon, StatsRecompenses, StatsPoints]),
   ],
   controllers: [EntrepriseController],
   providers: [EntrepriseService, JwtService, NotificationService],

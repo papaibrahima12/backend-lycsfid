@@ -7,6 +7,9 @@ import { Mecanisme } from 'src/entities/Mecanisme.entity';
 import { Particulier } from 'src/entities/Particulier.entity';
 import { Program } from 'src/entities/Program.entity';
 import { Recompense } from 'src/entities/Recompense.entity';
+import { StatsBon } from 'src/entities/StatsBon.entity';
+import { StatsCamp } from 'src/entities/StatsCamp.entity';
+import { StatsPoints } from 'src/entities/StatsPoints.entity';
 import { StatsRecompenses } from 'src/entities/StatsRecompenses.entity';
 import { NotificationService } from 'src/notification/notification.service';
 import { Repository } from 'typeorm';
@@ -21,6 +24,9 @@ export class EntrepriseService {
                 @InjectRepository(Recompense) private recompenseModel: Repository<Recompense>,
                 @InjectRepository(Particulier) private particulierModel: Repository<Particulier>,
                 @InjectRepository(StatsRecompenses) private statsRecompensesModel: Repository<StatsRecompenses>,
+                @InjectRepository(StatsBon) private statsBonModel: Repository<StatsBon>,
+                @InjectRepository(StatsCamp) private statsCampModel: Repository<StatsCamp>,
+                @InjectRepository(StatsPoints) private statsPointsModel: Repository<StatsPoints>,
                 private readonly sendingNotificationService: NotificationService
 
     ){}
@@ -250,8 +256,9 @@ export class EntrepriseService {
       recompenseData.entreprise = entreprise;
       const newRecompense = await this.recompenseModel.save(recompenseData);
       nbreRecomp = nbreRecomp + 1;
+      console.log('nbre rec',nbreRecomp);
       await this.statsRecompensesModel.save({
-        nombreBons: nbreRecomp,
+        nombreRecompenses: nbreRecomp,
         dateCreation: new Date(),
         entreprise: entreprise
       });
@@ -328,6 +335,78 @@ export class EntrepriseService {
         console.error(error);
         this.logger.error(`Erreur lors de la récuperation des recompenses: ${error.message}`);
         throw new Error('Erreur lors de la récuperation des recompenses');
+    }
+  }
+
+  async getAllStatsOfBons(id: number): Promise<StatsBon[]> {
+    try {
+      const entreprise = await this.entrepriseModel.findOne({where:{id: id}});
+
+      if (!entreprise) {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Entreprise non trouvée',
+        }, HttpStatus.NOT_FOUND);
+      }
+      const statsBons = await this.statsBonModel.find({where: {entreprise: entreprise}});
+      return statsBons;
+    } catch (error) {
+      console.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
+    }
+  }
+
+  async getAllStatsOfCampains(id: number): Promise<StatsCamp[]> {
+    try {
+      const entreprise = await this.entrepriseModel.findOne({where:{id: id}});
+
+      if (!entreprise) {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Entreprise non trouvée',
+        }, HttpStatus.NOT_FOUND);
+      }
+      const statsCampains = await this.statsCampModel.find({where: {entreprise: entreprise}});
+      return statsCampains;
+    } catch (error) {
+      console.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
+    }
+  }
+
+  async getAllStatsOfAttPoints(id: number): Promise<StatsPoints[]> {
+    try {
+      const entreprise = await this.entrepriseModel.findOne({where:{id: id}});
+
+      if (!entreprise) {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Entreprise non trouvée',
+        }, HttpStatus.NOT_FOUND);
+      }
+      const statsCampains = await this.statsPointsModel.find({where: {entreprise: entreprise}});
+      return statsCampains;
+    } catch (error) {
+      console.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
+    }
+  }
+
+  async getAllStatsOfRecompenses(id: number): Promise<StatsRecompenses[]> {
+    try {
+      const entreprise = await this.entrepriseModel.findOne({where:{id: id}});
+
+      if (!entreprise) {
+        throw new HttpException({
+          status: HttpStatus.NOT_FOUND,
+          error: 'Entreprise non trouvée',
+        }, HttpStatus.NOT_FOUND);
+      }
+      const statsCampains = await this.statsRecompensesModel.find({where: {entreprise: entreprise}});
+      return statsCampains;
+    } catch (error) {
+      console.error(`Erreur lors du chargement : ${error.message}`);
+      throw new Error('Erreur lors du chargement ');
     }
   }
 

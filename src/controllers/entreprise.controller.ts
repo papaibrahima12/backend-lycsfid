@@ -129,4 +129,28 @@ export class EntrepriseController {
     const userId = request['user'].userId;
     return this.entrepriseService.getRecompenses(userId);
   }
+
+  @Get('company/stats/bons')
+  async getStatsBons(@Request() request: { user: { userId: number } }): Promise<any> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.getAllStatsOfBons(userId);
+  }
+
+  @Get('company/stats/campagnes')
+  async getStatsCampagnes (@Request() request: { user: { userId: number } }): Promise<any> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.getAllStatsOfCampains(userId);
+  }
+
+  @Get('company/stats/recompenses')
+  async getStatsRecompenses (@Request() request: { user: { userId: number } }): Promise<any> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.getAllStatsOfRecompenses(userId);
+  }
+
+  @Get('company/stats/points')
+  async getStatsAttPoints (@Request() request: { user: { userId: number } }): Promise<any> {
+    const userId = request['user'].userId;
+    return this.entrepriseService.getAllStatsOfAttPoints(userId);
+  }
 }
